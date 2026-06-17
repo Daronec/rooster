@@ -1,0 +1,52 @@
+linter:
+  rules:
+    public_member_api_docs: true
+
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - lib/**/*.g.dart
+    - lib/gen/**
+    - lib/assets/**
+    - tools/bricks/**/__brick__/**
+  errors:
+    # Проект не переводит весь lib на 80 колонок; правило остаётся в very_good для новых файлов.
+    lines_longer_than_80_chars: ignore
+    # Ссылки [Type] в dartdoc без импорта типа в каждом файле.
+    comment_references: ignore
+    # Один метод в интерфейсе — норма для DI и gateway.
+    one_member_abstracts: ignore
+    # Имя super-параметра не совпадает с приватным полем базового WM.
+    matching_super_parameters: ignore
+    # Закрытый default в switch по enum из внешнего API.
+    no_default_cases: ignore
+    # ignore_for_file без длинного пояснения на каждом файле со строками/i18n.
+    document_ignores: ignore
+    # dispose / VoidCallback: отмена подписок и навигация без ожидания Future.
+    discarded_futures: ignore
+    # Стиль: каскады и имена параметров-прочерков в билдерах.
+    cascade_invocations: ignore
+    unnecessary_underscores: ignore
+    # После await уже есть mounted; линтер не всегда отслеживает поток.
+    use_build_context_synchronously: ignore
+    # generated / freezed / enum: порядок конструкторов не приоритетен.
+    sort_constructors_first: ignore
+    # API платформы / legacy сигнатуры.
+    avoid_positional_boolean_parameters: ignore
+    prefer_asserts_with_message: ignore
+    avoid_catching_errors: ignore
+    avoid_equals_and_hash_code_on_mutable_classes: ignore
+    cancel_subscriptions: ignore
+    use_setters_to_change_properties: ignore
+    avoid_catches_without_on_clauses: ignore
+    library_private_types_in_public_api: ignore
+    no_logic_in_create_state: ignore
+    directives_ordering: ignore
+    prefer_constructors_over_static_methods: ignore
+
+dart_code_metrics:
+  rules:
+    # Добавлена возможность создания методов оканчивающихся на 'Factory' и 'Builder'.
+    - prefer-correct-callback-field-name:
+        name-pattern: "(^on[A-Z]+)|(^[a-zA-z]+Factory$)|(^[a-zA-z]+Builder$)"

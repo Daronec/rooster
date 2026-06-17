@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "453042848122",
+    "project_id": "rooster-b4a95",
+    "storage_bucket": "rooster-b4a95.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453042848122:android:aefd1382200c67b88fd6c3",
+        "android_client_info": {
+          "package_name": "ru.aronets.rooster"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "453042848122-16frd7bds5ns1ut56b5sic3dbfsjnq2j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ru.aronets.rooster",
+            "certificate_hash": "acc774114936b93101c066941f38283518ca3004"
+          }
+        },
+        {
+          "client_id": "453042848122-6ba5h6f8pasc2i9poag1r54oka80idct.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIzakfLDaMJg96VCUmi9al3uhe-O3eN70"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "453042848122-6ba5h6f8pasc2i9poag1r54oka80idct.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "453042848122-eq33kvei03iq1sktj1hvpabua2m8lqvj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "ru.aronets.rooster"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

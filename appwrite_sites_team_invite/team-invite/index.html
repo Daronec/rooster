@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Приглашение в команду</title>
+  </head>
+  <body>
+    <pre id="out">Подтверждаем приглашение…</pre>
+
+    <script>
+      const out = document.getElementById('out');
+      const qp = new URLSearchParams(location.search);
+
+      const teamId = qp.get('teamId');
+      const membershipId = qp.get('membershipId');
+      const userId = qp.get('userId');
+      const secret = qp.get('secret');
+      const teamName = qp.get('teamName');
+
+      const endpoint = 'https://fra.cloud.appwrite.io/v1';
+      const projectId = 'rooster';
+
+      async function run() {
+        if (!teamId || !membershipId || !userId || !secret) {
+          out.textContent = 'Не хватает параметров в ссылке.';
+          return;
+        }
+
+        out.textContent = `Команда: ${decodeURIComponent(teamName || '')}\nОтправляем подтверждение…`;
+
+        const res = await fetch(
+          `${endpoint}/teams/${encodeURIComponent(teamId)}/memberships/${encodeURIComponent(membershipId)}/status`,
+          {
+            method: 'PATCH',
+            headers: {
+              'content-type': 'application/json',
+              'x-appwrite-project': projectId,
+            },
+            body: JSON.stringify({ userId, secret }),
+          }
+        );
+
+        const text = await res.text();
+        if (res.status === 409 && text.includes('membership_already_confirmed')) {
+          out.textContent =
+            'Приглашение уже подтверждено.\nМожно закрыть страницу и вернуться в приложение.';
+          return;
+        }
+        if (!res.ok) {
+          out.textContent = `Ошибка подтверждения (${res.status}):\n${text}`;
+          return;
+        }
+
+        out.textContent =
+          'Готово. Приглашение подтверждено.\nМожно закрыть страницу и вернуться в приложение.';
+      }
+
+      run().catch((e) => {
+        out.textContent = `Ошибка: ${String(e)}`;
+      });
+    </script>
+  </body>
+</html>
+

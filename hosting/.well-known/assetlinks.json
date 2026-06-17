@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ru.aronets.rooster",
+      "sha256_cert_fingerprints": [
+        "8A:00:61:49:C5:5D:58:56:16:F2:4D:C0:19:0B:35:C2:23:51:70:EF:1F:F9:76:27:6B:01:DA:DB:CD:60:45:31"
+      ]
+    }
+  }
+]

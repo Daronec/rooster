@@ -1,0 +1,5 @@
+bricks:
+  feature:
+    path: tools/bricks/feature
+  screen:
+    path: tools/bricks/screen

@@ -1,0 +1,12 @@
+// ignore_for_file: format-comment
+
+/// Endpoints for {{ service.name|snakeCaseToCamelCase|capitalizeFirstLetter }}
+class {{ service.name|snakeCaseToCamelCase|capitalizeFirstLetter }}Urls {
+  {% for path in service.paths %}{#
+  #}{% for operation in path.operations %}{% for line in operation.summary|splitLines %}
+  /// {{ line }}{% endfor %}{% endfor %}
+  static const String {% for name in path.name|split:'.' %}{% if forloop.first %}{{ name }}{% endif %}{% endfor %} = '{{ path.path }}';
+  {% endfor %}
+
+  const {{ service.name|snakeCaseToCamelCase|capitalizeFirstLetter }}Urls._();
+}

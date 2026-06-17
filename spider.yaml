@@ -1,0 +1,29 @@
+# Конфигурация Spider — генерация Dart-ссылок на ассеты
+# Документация: https://pub.dev/packages/spider
+#
+# Иконки: [lib/gen/resources/assets_icons.dart] ведётся вручную (пути .svg.vec).
+# После `dart run spider build` проверьте, что в [lib/gen/resources/resources.dart]
+# остаётся `part 'assets_icons.dart';`.
+
+# Генерировать unit-тесты проверки существования файлов
+generate_tests: true
+
+# Убрать комментарии "generated" в сгенерированном коде
+no_comments: true
+
+# Экспортировать все сгенерированные файлы одной библиотекой
+export: true
+
+# Один import для всех ссылок на ассеты
+use_part_of: true
+
+# Папка внутри lib для сгенерированных ссылок (будет создана при первом build)
+package: gen/resources
+
+groups:
+  # Иконки: assets_icons.dart вручную (пути .svg.vec + vector_graphics).
+  # После правок в assets/icons пересобрать: dart run vector_graphics_compiler --input-dir assets/icons --out-dir assets/vectors
+  - path: assets/images
+    class_name: AssetsImages
+    types: [ .png ]
+    package: gen/resources
