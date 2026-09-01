@@ -45,6 +45,14 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
+        // CMake конфигурация для native LLM library
+        externalNativeBuild {
+            cmake {
+                cppFlags += "-std=c++17"
+                arguments += "-DANDROID_STL=c++_shared"
+            }
+        }
+
         val huaweiAppId =
             readHuaweiAppIdFromAgconnect(layout.projectDirectory.asFile).ifEmpty {
                 readHuaweiAppIdFromAndroidLocalProperties(rootProject.layout.projectDirectory.asFile)
@@ -57,6 +65,18 @@ android {
                     "либо huawei.app.id в android/local.properties — иначе в манифесте appid= и HMS пишет appid=null.",
             )
         }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("../../native/flutter_llm_bridge/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
+
+    // Копируем GGUF модель в assets (не сжимать)
+    aaptOptions {
+        noCompress("gguf")
     }
 
     signingConfigs {

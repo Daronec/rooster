@@ -1,0 +1,6 @@
+# Скопируйте в android/key.properties и подставьте пароли (файл key.properties в git не попадает).
+# Keystore: android/app/upload-keystore.jks (создаётся keytool, см. README команды в чате / документацию команды).
+storePassword=ВАШ_ПАРОЛЬ
+keyPassword=ВАШ_ПАРОЛЬ
+keyAlias=roosterRelease
+storeFile=upload-keystore.jks

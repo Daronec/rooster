@@ -1,4 +1,4 @@
-/// События аналитики продукта (HMS Analytics Kit и т.д.; облачная аналитика Firebase отключена).
+/// События аналитики продукта (HMS Analytics Kit и т.д.).
 abstract interface class IAppAnalyticsGateway {
   /// Старт приложения / сессии.
   Future<void> logAppOpen();

@@ -4,7 +4,7 @@ import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
 import 'package:rooster/features/profile/domain/gateways/i_profile_avatar_gateway.dart';
 import 'package:rooster/features/profile/domain/gateways/i_profile_personal_data_gateway.dart';
 import 'package:rooster/features/profile/domain/gateways/i_teams_gateway.dart';
-import 'package:rooster/integration/firebase/user_presence_service.dart';
+
 import 'package:rooster/integration/network/connectivity_gateway.dart';
 
 /// Результат сборки одной стратегии облачной авторизации.
@@ -12,7 +12,6 @@ final class AuthBackendAssemblyResult {
   /// Создаёт результат.
   const AuthBackendAssemblyResult({
     required this.authGateway,
-    required this.userPresenceService,
     required this.remoteExecutor,
     required this.profilePersonalDataGateway,
     required this.profileAvatarGateway,
@@ -22,9 +21,6 @@ final class AuthBackendAssemblyResult {
 
   /// Шлюз входа и сессии.
   final IAuthGateway authGateway;
-
-  /// Сервис присутствия RTDB (заглушка; Firebase отключён).
-  final UserPresenceService? userPresenceService;
 
   /// Исполнитель удалённой синхронизации очереди.
   final ISyncRemoteExecutor remoteExecutor;

@@ -11,7 +11,7 @@ final class OfflineAuthGateway implements IAuthGateway {
   /// Создаёт шлюз.
   OfflineAuthGateway(
     this._logger, {
-    this.unavailableReason = CloudAuthUnavailableReason.firebaseNotInitialized,
+    this.unavailableReason = CloudAuthUnavailableReason.cloudNotConfigured,
   });
 
   final ILogWriter _logger;
@@ -40,7 +40,7 @@ final class OfflineAuthGateway implements IAuthGateway {
   @override
   Future<void> signInWithGoogle() async {
     _logger.log(
-      'auth_blocked_${unavailableReason == CloudAuthUnavailableReason.firebaseNotInitialized ? 'no_firebase' : 'offline_only_policy'}',
+      'auth_blocked_${unavailableReason == CloudAuthUnavailableReason.cloudNotConfigured ? 'cloud_not_configured' : 'offline_only_policy'}',
     );
     throw CloudAuthUnavailableException(unavailableReason);
   }
@@ -99,7 +99,7 @@ final class OfflineAuthGateway implements IAuthGateway {
     required String phoneE164,
   }) async {
     _logger.log(
-      'auth_blocked_${unavailableReason == CloudAuthUnavailableReason.firebaseNotInitialized ? 'no_firebase' : 'offline_only_policy'}',
+      'auth_blocked_${unavailableReason == CloudAuthUnavailableReason.cloudNotConfigured ? 'cloud_not_configured' : 'offline_only_policy'}',
     );
     throw CloudAuthUnavailableException(unavailableReason);
   }
@@ -110,7 +110,7 @@ final class OfflineAuthGateway implements IAuthGateway {
     required String otpSecret,
   }) async {
     _logger.log(
-      'auth_blocked_${unavailableReason == CloudAuthUnavailableReason.firebaseNotInitialized ? 'no_firebase' : 'offline_only_policy'}',
+      'auth_blocked_${unavailableReason == CloudAuthUnavailableReason.cloudNotConfigured ? 'cloud_not_configured' : 'offline_only_policy'}',
     );
     throw CloudAuthUnavailableException(unavailableReason);
   }

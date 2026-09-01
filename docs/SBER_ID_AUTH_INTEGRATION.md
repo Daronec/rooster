@@ -4,6 +4,8 @@
 
 ---
 
+Прочитай: https://developers.sber.ru/docs/ru/gigachat/individuals-quickstart
+
 ## Оглавление
 
 1. [Обзор](#1-обзор)
@@ -80,6 +82,13 @@ Sber ID работает как OAuth2-провайдер в Appwrite. Нам н
 
 ## 3. Настройка OAuth в Sber ID
 
+CURL:
+curl -L -X POST 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth' \
+-H 'Content-Type: application/x-www-form-urlencoded' \
+-H 'Accept: application/json' \
+-H 'RqUID: 54effafc-0d47-4583-94f8-017a3b3a7cdc' \
+-H 'Authorization: Basic <Authorization key>' \
+--data-urlencode 'scope=GIGACHAT_API_PERS'
 ### Шаг 3.1. Redirect URI (Callback URL)
 
 Для мобильного приложения используйте deep link:

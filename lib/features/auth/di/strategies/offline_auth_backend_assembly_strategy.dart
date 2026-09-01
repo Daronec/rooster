@@ -28,7 +28,6 @@ final class OfflineAuthBackendAssemblyStrategy
     );
     return AuthBackendAssemblyResult(
       authGateway: authGateway,
-      userPresenceService: null,
       remoteExecutor: const LocalOnlySyncExecutor(),
       profilePersonalDataGateway: const NoopProfilePersonalDataGatewayImpl(),
       profileAvatarGateway: const NoopProfileAvatarGatewayImpl(),

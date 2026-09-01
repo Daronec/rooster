@@ -16,7 +16,7 @@ Rooster — Flutter-приложение для управления задач�
 - SharedPreferences для простых настроек.
 - FlutterSecureStorage для токенов и PIN.
 - Dio / Retrofit для HTTP.
-- Appwrite, Supabase, Firebase/HMS ветки для auth/sync интеграций.
+- Appwrite, Supabase, HMS ветки для auth/sync интеграций.
 - flutter_local_notifications для напоминаний.
 - theme_tailor для дизайн-токенов.
 - very_good_analysis для статического анализа.

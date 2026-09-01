@@ -195,8 +195,8 @@ class AuthScreenWidgetModel
     CloudAuthUnavailableReason reason,
   ) {
     switch (reason) {
-      case CloudAuthUnavailableReason.firebaseNotInitialized:
-        return 'auth.cloudSignInBlockedFirebaseNotInitialized';
+      case CloudAuthUnavailableReason.cloudNotConfigured:
+        return 'auth.cloudSignInBlockedCloudNotConfigured';
       case CloudAuthUnavailableReason.cloudDisabledByDevicePolicy:
         return 'auth.cloudSignInBlockedOfflineOnlyDevice';
       case CloudAuthUnavailableReason.hmsHostNonFirebaseProviders:

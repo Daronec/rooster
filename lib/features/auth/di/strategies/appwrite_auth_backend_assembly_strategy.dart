@@ -100,7 +100,6 @@ final class AppwriteAuthBackendAssemblyStrategy
 
     return AuthBackendAssemblyResult(
       authGateway: authGateway,
-      userPresenceService: null,
       remoteExecutor: remoteExecutor,
       profilePersonalDataGateway: AppwriteProfilePersonalDataGatewayImpl(
         account: account,
