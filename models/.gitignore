@@ -1,0 +1,5 @@
+# Ignore GGUF models (large files)
+*.gguf
+
+# Except this README
+!README.md

@@ -11,6 +11,38 @@
 part of 'app_router.dart';
 
 /// generated route for
+/// [AiChatFlow]
+class AiChatFlowRoute extends PageRouteInfo<void> {
+  const AiChatFlowRoute({List<PageRouteInfo>? children})
+    : super(AiChatFlowRoute.name, initialChildren: children);
+
+  static const String name = 'AiChatFlowRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AiChatFlow();
+    },
+  );
+}
+
+/// generated route for
+/// [AiChatScreen]
+class AiChatRoute extends PageRouteInfo<void> {
+  const AiChatRoute({List<PageRouteInfo>? children})
+    : super(AiChatRoute.name, initialChildren: children);
+
+  static const String name = 'AiChatRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AiChatScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [AuthFlow]
 class AuthFlowRoute extends PageRouteInfo<void> {
   const AuthFlowRoute({List<PageRouteInfo>? children})

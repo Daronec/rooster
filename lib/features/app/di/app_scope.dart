@@ -22,13 +22,14 @@ import 'package:rooster/features/tasks/domain/use_cases/complete_task_and_consum
 import 'package:rooster/features/tasks/domain/use_cases/list_blocked_tasks_with_reasons_use_case.dart';
 import 'package:rooster/features/tasks/domain/use_cases/list_today_ready_tasks_use_case.dart';
 import 'package:rooster/features/tasks/domain/use_cases/resolve_task_feasibility_use_case.dart';
-import 'package:rooster/integration/firebase/user_presence_service.dart';
+
+import 'package:rooster/features/ai/domain/gateways/i_local_llm_gateway.dart';
 import 'package:rooster/integration/network/connectivity_gateway.dart';
 import 'package:rooster/persistence/storage/pin_code_storage/i_pin_code_storage.dart';
 import 'package:rooster/persistence/storage/tokens_storage/token_storage_impl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Корневой scope приложения (Task Manager + синхронизация; Firebase отключён).
+/// Корневой scope приложения (Task Manager + синхронизация).
 abstract interface class IAppScope {
   /// Окружение.
   Environment get env;
@@ -50,9 +51,6 @@ abstract interface class IAppScope {
 
   /// PIN-хранилище (наследие инфраструктуры; можно отключить в UI).
   IPinCodeStorage get pinCodeStorage;
-
-  /// Резерв под флаг облака (сейчас всегда false — Firebase отключён).
-  bool get firebaseAvailable;
 
   /// Выбранная стратегия облака/входа (см. docs/AUTH_DUAL_STRATEGY_PLAN.md).
   AuthBackendStrategy get authBackendStrategy;
@@ -121,8 +119,9 @@ abstract interface class IAppScope {
   /// Сеть.
   IConnectivityGateway get connectivityGateway;
 
-  /// Присутствие в RTDB (заглушка; Firebase отключён).
-  UserPresenceService? get userPresenceService;
+  /// Локальная LLM-модель (опционально, может быть null).
+  ILocalLLMGateway? get localLLMGateway;
+
 }
 
 /// Реализация [IAppScope].
@@ -136,7 +135,6 @@ final class AppScope implements IAppScope {
     required this.localNotificationsPlugin,
     required this.tokenStorage,
     required this.pinCodeStorage,
-    required this.firebaseAvailable,
     required this.authBackendStrategy,
     required this.isLikelyHuaweiOrHonorAndroidForAuthUi,
     required this.authGateway,
@@ -159,7 +157,7 @@ final class AppScope implements IAppScope {
     required this.syncManager,
     required this.syncEngineListenable,
     required this.connectivityGateway,
-    required this.userPresenceService,
+    required this.localLLMGateway,
   });
 
   @override
@@ -182,9 +180,6 @@ final class AppScope implements IAppScope {
 
   @override
   final IPinCodeStorage pinCodeStorage;
-
-  @override
-  final bool firebaseAvailable;
 
   @override
   final AuthBackendStrategy authBackendStrategy;
@@ -254,5 +249,6 @@ final class AppScope implements IAppScope {
   final IConnectivityGateway connectivityGateway;
 
   @override
-  final UserPresenceService? userPresenceService;
+  final ILocalLLMGateway? localLLMGateway;
+
 }

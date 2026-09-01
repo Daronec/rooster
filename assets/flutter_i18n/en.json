@@ -243,6 +243,7 @@
     "mainNavDecisions": "Decisions",
     "mainNavProfile": "Profile",
     "mainNavSettings": "Settings",
+    "mainNavAiChat": "AI Chat",
     "decision": {
       "debugPanelTitle": "Decisions (debug only)",
       "debugTodaySection": "Ready now (top 3)",

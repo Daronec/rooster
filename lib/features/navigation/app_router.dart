@@ -2,6 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:rooster/app_routing/app_route_paths.dart';
+import 'package:rooster/features/ai/presentation/ai_chat_flow.dart';
+import 'package:rooster/features/ai/presentation/screens/ai_chat/ai_chat_screen.dart';
 import 'package:rooster/features/app/presentation/main_desktop_shell_screen.dart';
 import 'package:rooster/features/app/presentation/main_flow.dart';
 import 'package:rooster/features/auth/presentation/auth_flow.dart';
@@ -113,6 +115,12 @@ class AppRouter extends RootStackRouter {
           page: ProfileFlowRoute.page,
           children: [
             AutoRoute(page: ProfileRoute.page, initial: true),
+          ],
+        ),
+        AutoRoute(
+          page: AiChatFlowRoute.page,
+          children: [
+            AutoRoute(page: AiChatRoute.page, initial: true),
           ],
         ),
       ],

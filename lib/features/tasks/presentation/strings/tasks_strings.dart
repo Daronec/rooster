@@ -105,6 +105,9 @@ final class TasksStrings {
   static String mainNavSettings(BuildContext context) =>
       FlutterI18n.translate(context, 'tasks.mainNavSettings');
 
+  static String mainNavAiChat(BuildContext context) =>
+      FlutterI18n.translate(context, 'tasks.mainNavAiChat');
+
   static String decisionDebugPanelTitle(BuildContext context) =>
       FlutterI18n.translate(context, 'tasks.decision.debugPanelTitle');
 

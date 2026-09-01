@@ -58,6 +58,7 @@ class MainFlow extends StatelessWidget {
             PlanningFlowRoute(),
             DecisionFlowRoute(),
             ProfileFlowRoute(),
+            AiChatFlowRoute(),
           ];
     return AutoTabsRouter(
       routes: routes,
@@ -122,6 +123,10 @@ class MainFlow extends StatelessWidget {
               BottomNavigationBarItem(
                 icon: const Icon(Icons.person_outline),
                 label: TasksStrings.mainNavProfile(context),
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.psychology_outlined),
+                label: TasksStrings.mainNavAiChat(context),
               ),
             ],
           ),

@@ -10,6 +10,8 @@ import 'package:rooster/config/environment/environment.dart';
 import 'package:rooster/core/analytics/i_app_analytics_gateway.dart';
 import 'package:rooster/core/sync/sync_manager_impl.dart';
 import 'package:rooster/core/sync/sync_manager_ref.dart';
+import 'package:rooster/features/ai/data/local_llm_gateway_impl.dart';
+import 'package:rooster/features/ai/domain/gateways/i_local_llm_gateway.dart';
 import 'package:rooster/features/app/di/app_scope.dart';
 import 'package:rooster/features/auth/di/auth_backend_assembler.dart';
 import 'package:rooster/features/auth/di/auth_backend_assembly_context.dart';
@@ -38,7 +40,7 @@ import 'package:rooster/features/tasks/data/storage/tasks_screen_expanded_group_
 import 'package:rooster/features/tasks/domain/entities/task_list_entity.dart';
 import 'package:rooster/features/tasks/domain/task_ids.dart';
 import 'package:rooster/integration/analytics/huawei_app_analytics_gateway_impl.dart';
-import 'package:rooster/integration/firebase/firebase_bootstrap.dart';
+
 import 'package:rooster/integration/hms/hms_bootstrap.dart';
 import 'package:rooster/integration/network/connectivity_gateway.dart';
 import 'package:rooster/persistence/storage/pin_code_storage/pin_code_storage_impl.dart';
@@ -78,11 +80,8 @@ final class AppScopeRegister {
         huaweiHostProfile.isLikelyHuaweiOrHonorDevice &&
         accountKitRuntimeSupported;
 
-    var firebaseInitialized = false;
     if (isHuaweiHmsBranch) {
       await HmsBootstrap.initialize(logger);
-    } else {
-      firebaseInitialized = await FirebaseBootstrap.initialize(logger);
     }
 
     final appwriteEnv = AppwriteEnvConfig.fromDotenv();
@@ -92,7 +91,7 @@ final class AppScopeRegister {
     logger.log('auth_backend_strategy=${authBackendStrategy.name}');
     if (kDebugMode) {
       logger.log(
-        'auth_probe firebase=$firebaseInitialized gms=$googlePlayServicesUsable '
+        'auth_probe gms=$googlePlayServicesUsable '
         'huaweiHost=${huaweiHostProfile.isLikelyHuaweiOrHonorDevice} '
         'hms_branch=$isHuaweiHmsBranch',
       );
@@ -238,6 +237,18 @@ final class AppScopeRegister {
 
     await syncManager.requestSync();
 
+    // Инициализация локальной LLM (опционально, graceful degradation)
+    ILocalLLMGateway? localLLMGateway;
+    try {
+      // Путь к модели будет определён при запуске
+      // Модель будет загружена из assets при первом запросе
+      localLLMGateway = LocalLLMGatewayImpl();
+      logger.log('LLM gateway created (model will be loaded on first use)');
+    } catch (e) {
+      logger.log('LLM gateway init failed (optional feature): $e');
+      localLLMGateway = null;
+    }
+
     final isLikelyHuaweiOrHonorAndroidForAuthUi =
         huaweiHostProfile.isAndroidHost &&
         huaweiHostProfile.isLikelyHuaweiOrHonorDevice;
@@ -250,7 +261,6 @@ final class AppScopeRegister {
       localNotificationsPlugin: localNotificationsPlugin,
       tokenStorage: tokenStorage,
       pinCodeStorage: pinCodeStorage,
-      firebaseAvailable: firebaseInitialized,
       authBackendStrategy: authBackendStrategy,
       isLikelyHuaweiOrHonorAndroidForAuthUi:
           isLikelyHuaweiOrHonorAndroidForAuthUi,
@@ -277,7 +287,7 @@ final class AppScopeRegister {
       syncManager: syncManager,
       syncEngineListenable: syncManager,
       connectivityGateway: connectivity,
-      userPresenceService: authAssembly.userPresenceService,
+      localLLMGateway: localLLMGateway,
     );
   }
 }

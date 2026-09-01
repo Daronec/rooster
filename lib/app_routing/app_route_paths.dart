@@ -23,4 +23,7 @@ abstract class AppRoutePaths {
 
   /// Вложенный экран dev.
   static const String devPanel = 'dev-panel';
+
+  /// AI Chat.
+  static const String aiChat = 'ai-chat';
 }
