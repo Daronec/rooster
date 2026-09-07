@@ -12,53 +12,55 @@ set(BRIDGE_SOURCES
     llm_bridge.h
 )
 
-# llama.cpp (если существует)
+# llama.cpp
 set(LLAMA_CPP_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../llama_cpp/llama.cpp")
 
 if(EXISTS "${LLAMA_CPP_DIR}")
-    # Включаем llama.cpp как поддиректорию
-    add_subdirectory(${LLAMA_CPP_DIR} llama_cpp_build EXCLUDE_FROM_ALL)
+    # Отключаем llamafile ГЛОБАЛЬНО для всей сборки llama.cpp
+    # Это решает проблему с NEON интринсиками на armeabi-v7a
+    set(GGML_LLAMAFILE OFF CACHE BOOL "Disable llamafile optimizations" FORCE)
     
-    # Находим llama library
-    find_library(LLAMA_LIBRARY llama)
+    # Включаем llama.cpp
+    add_subdirectory(${LLAMA_CPP_DIR} llama_cpp_build)
     
-    if(LLAMA_LIBRARY)
-        # Собираем с llama.cpp
-        add_library(llm_bridge SHARED ${BRIDGE_SOURCES})
-        
-        target_include_directories(llm_bridge PRIVATE
-            ${LLAMA_CPP_DIR}/include
-            ${LLAMA_CPP_DIR}/ggml/include
-        )
-        
-        target_link_libraries(llm_bridge PRIVATE ${LLAMA_LIBRARY})
-        
-        # Отключаем оптимизации под мобильные CPU
-        target_compile_options(llm_bridge PRIVATE
-            -DLLAMA_NATIVE=OFF
-            -DLLAMA_AVX=OFF
-            -DLLAMA_FMA=OFF
-            -DLLAMA_F16C=OFF
+    # Собираем bridge
+    add_library(llm_bridge SHARED ${BRIDGE_SOURCES})
+    
+    # Добавляем include директории
+    target_include_directories(llm_bridge PRIVATE
+        ${LLAMA_CPP_DIR}/include
+        ${LLAMA_CPP_DIR}/ggml/include
+    )
+    
+    # Отключаем оптимизации под мобильные CPU
+    target_compile_options(llm_bridge PRIVATE
+        -DLLAMA_NATIVE=OFF
+        -DLLAMA_AVX=OFF
+        -DLLAMA_FMA=OFF
+        -DLLAMA_F16C=OFF
+    )
+    
+    # Android-specific
+    if(ANDROID)
+        # Связываем с llama и Android библиотеками
+        target_link_libraries(llm_bridge PRIVATE
+            llama
+            android
+            log
         )
     else()
-        # Fallback: собираем без llama.cpp (STUB mode)
-        add_library(llm_bridge SHARED ${BRIDGE_SOURCES})
+        target_link_libraries(llm_bridge PRIVATE llama)
     endif()
+    
+    # Общие настройки
+    target_compile_options(llm_bridge PRIVATE
+        -fexceptions
+        -frtti
+    )
+    
+    message(STATUS "Building with llama.cpp (llamafile disabled)")
 else()
     # Fallback: собираем без llama.cpp (STUB mode)
     add_library(llm_bridge SHARED ${BRIDGE_SOURCES})
-endif()
-
-# Общие настройки
-target_compile_options(llm_bridge PRIVATE
-    -fexceptions
-    -frtti
-)
-
-# Android-specific
-if(ANDROID)
-    target_link_libraries(llm_bridge
-        android
-        log
-    )
+    message(WARNING "llama.cpp not found, building STUB mode")
 endif()

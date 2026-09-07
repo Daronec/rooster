@@ -38,4 +38,3 @@ class TaskChangeHistoryMobileFailure extends StatelessWidget {
     );
   }
 }
-

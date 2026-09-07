@@ -12,5 +12,4 @@ abstract interface class ITaskDueReminderGateway {
   Future<void> cancelDueReminder(String taskId);
 }
 
-// end
 

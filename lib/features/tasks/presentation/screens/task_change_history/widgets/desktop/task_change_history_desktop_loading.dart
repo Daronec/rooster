@@ -24,4 +24,3 @@ class TaskChangeHistoryDesktopLoading extends StatelessWidget {
     );
   }
 }
-

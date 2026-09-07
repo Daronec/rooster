@@ -57,7 +57,3 @@ final class NotificationStringsResolver {
     return current;
   }
 }
-
-// end
-
-

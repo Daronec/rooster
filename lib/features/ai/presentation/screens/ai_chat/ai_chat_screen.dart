@@ -1,221 +1,181 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rooster/common/utils/snack_queue/presentation/snack_queue_provider.dart';
+import 'package:rooster/core/architecture/presentation/base_widget.dart';
+import 'package:rooster/features/ai/presentation/screens/ai_chat/ai_chat_model.dart';
+import 'package:rooster/features/ai/presentation/screens/ai_chat/ai_chat_wm.dart';
+import 'package:rooster/features/ai/presentation/screens/ai_chat/widgets/ai_chat_init_progress.dart';
+import 'package:rooster/features/ai/presentation/screens/ai_chat/widgets/ai_chat_input_field.dart';
+import 'package:rooster/features/ai/presentation/screens/ai_chat/widgets/ai_chat_message_bubble.dart';
+import 'package:rooster/features/ai/presentation/screens/ai_chat/widgets/ai_chat_welcome_message.dart';
+import 'package:rooster/features/ai/presentation/strings/ai_chat_strings.dart';
 import 'package:rooster/features/app/di/app_scope.dart';
 
 /// Экран AI-ассистента.
-@RoutePage()
-class AiChatScreen extends StatefulWidget {
-  const AiChatScreen({super.key});
+@RoutePage(name: 'AiChatRoute')
+class AiChatScreen extends BaseWidget<AiChatScreenWidgetModel> {
+  /// Создаёт экран.
+  const AiChatScreen({super.key}) : super(aiChatScreenWidgetModelFactory);
 
   @override
-  State<AiChatScreen> createState() => _AiChatScreenState();
+  Widget buildDesktop(AiChatScreenWidgetModel wm) => _AiChatScreenContent(wm: wm);
+
+  @override
+  Widget buildMobile(AiChatScreenWidgetModel wm) => _AiChatScreenContent(wm: wm);
 }
 
-class _AiChatScreenState extends State<AiChatScreen> {
-  final TextEditingController _controller = TextEditingController();
-  final List<_Message> _messages = [];
-  bool _isLoading = false;
+/// Фабрика [AiChatScreenWidgetModel].
+AiChatScreenWidgetModel aiChatScreenWidgetModelFactory(BuildContext context) {
+  final scope = context.read<IAppScope>();
+  return AiChatScreenWidgetModel(
+    AiChatScreenModel(appScope: scope),
+    snackController: SnackQueueProvider.of(context),
+  );
+}
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+/// Контент экрана AI-чата (общий для mobile/desktop).
+class _AiChatScreenContent extends StatelessWidget {
+  const _AiChatScreenContent({required this.wm});
+
+  final AiChatScreenWidgetModel wm;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Ассистент'),
+        title: Text(AiChatStrings.screenTitle(context)),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.secondary,
+                theme.colorScheme.primary,
+                theme.colorScheme.secondary,
               ],
             ),
           ),
         ),
+        actions: [
+          // Индикатор состояния модели
+          if (wm.hasModelManager) ...[
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Text(
+                wm.isModelReady
+                    ? AiChatStrings.modelReadyIndicator(
+                        context,
+                        modelName: wm.selectedModelName ?? '',
+                      )
+                    : AiChatStrings.modelNotReadyIndicator(context),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: wm.isModelReady
+                      ? Colors.greenAccent
+                      : Colors.orangeAccent,
+                ),
+              ),
+            ),
+          ],
+          // Кнопка выбора модели
+          IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: wm.state != AiChatState.loading
+                ? () => wm.showModelSelector(context)
+                : null,
+          ),
+        ],
       ),
       body: Column(
         children: [
-          Expanded(
-            child: _messages.isEmpty
-                ? _buildWelcomeMessage(context)
-                : ListView.builder(
-                    reverse: true,
-                    itemCount: _messages.length,
-                    itemBuilder: (_, i) =>
-                        _MessageBubble(_messages.reversed.toList()[i]),
-                  ),
-          ),
-          _buildInput(),
+          // Показываем прогресс инициализации если загружаем
+          if (wm.state == AiChatState.loading) ...[
+            Expanded(
+              child: AiChatInitProgress(
+                downloadProgress: wm.downloadProgress,
+                isDownloading: wm.isDownloading,
+              ),
+            ),
+          ] else ...[
+            Expanded(
+              child: wm.messages.isEmpty
+                  ? _buildWelcomeScreen(context, wm)
+                  : ListView.builder(
+                      reverse: true,
+                      itemCount: wm.messages.length,
+                      itemBuilder: (_, i) =>
+                          AiChatMessageBubble(wm.messages.reversed.toList()[i]),
+                    ),
+            ),
+          ],
+          AiChatInputField(wm: wm),
         ],
       ),
     );
   }
 
-  Widget _buildWelcomeMessage(BuildContext context) {
+  Widget _buildWelcomeScreen(BuildContext context, AiChatScreenWidgetModel wm) {
+    final theme = Theme.of(context);
+
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.psychology,
               size: 64,
-              color: Theme.of(context).colorScheme.primary,
+              color: theme.colorScheme.primary,
             ),
             const SizedBox(height: 16),
             Text(
-              'AI Ассистент',
-              style: Theme.of(context).textTheme.headlineSmall,
+              AiChatStrings.welcomeTitle(context),
+              style: theme.textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
             Text(
-              'Задайте вопрос о ваших задачах,\nприоритетах или планах',
+              AiChatStrings.welcomeSubtitle(context),
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInput() {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                decoration: InputDecoration(
-                  hintText: 'Введите запрос...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+            const SizedBox(height: 24),
+            if (!wm.hasModelManager) ...[
+              Text(
+                AiChatStrings.noDownloadedModels(context),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
-                maxLines: null,
-                textCapitalization: TextCapitalization.sentences,
               ),
-            ),
-            const SizedBox(width: 8),
-            CircleAvatar(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              child: IconButton(
-                icon: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Icon(Icons.send, color: Colors.white),
-                onPressed: _isLoading ? null : _sendMessage,
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => wm.showDownloadDialog(context),
+                icon: const Icon(Icons.download),
+                label: Text(AiChatStrings.downloadModelButton(context)),
               ),
-            ),
+            ] else ...[
+              Text(
+                AiChatStrings.selectModelForWork(context),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => wm.showModelSelector(context),
+                icon: const Icon(Icons.tune),
+                label: Text(AiChatStrings.selectModelAction(context)),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Future<void> _sendMessage() async {
-    final text = _controller.text.trim();
-    if (text.isEmpty) return;
-
-    _messages.add(_Message(role: 'user', text: text));
-    _controller.clear();
-    setState(() => _isLoading = true);
-
-    try {
-      final llm = context.read<IAppScope>().localLLMGateway;
-      if (llm == null || !llm.isInitialized) {
-        _messages.add(
-          _Message(
-            role: 'assistant',
-            text: 'LLM пока не доступна. Модель будет загружена при первой использовании.',
-          ),
-        );
-      } else {
-        final prompt = _buildPrompt(text);
-        final response = await llm.generate(prompt: prompt);
-        _messages.add(
-          _Message(
-            role: 'assistant',
-            text: response ?? 'Произошла ошибка при генерации ответа.',
-          ),
-        );
-      }
-    } on Exception catch (e) {
-      _messages.add(_Message(role: 'assistant', text: 'Ошибка: $e'));
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  String _buildPrompt(String userText) {
-    return '''Ты — полезный ассистент для управления задачами.
-Ответь кратко и по делу.
-
-Пользователь: $userText
-Твой ответ:''';
-  }
-}
-
-/// Модель сообщения.
-class _Message {
-  _Message({required this.role, required this.text});
-
-  final String role;
-  final String text;
-}
-
-/// Виджет пузырька сообщения.
-class _MessageBubble extends StatelessWidget {
-  const _MessageBubble(this.message);
-
-  final _Message message;
-
-  @override
-  Widget build(BuildContext context) {
-    final isUser = message.role == 'user';
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Align(
-        alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: isUser
-                ? theme.colorScheme.primaryContainer
-                : theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            message.text,
-            style: theme.textTheme.bodyMedium,
-          ),
-        ),
-      ),
-    );
-  }
 }

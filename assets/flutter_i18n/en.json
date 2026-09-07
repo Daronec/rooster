@@ -462,5 +462,33 @@
     "shareSubject": "Task in Rooster",
     "loadError": "Could not load task",
     "openFullscreenSemantics": "Open image full screen"
+  },
+  "ai": {
+    "screenTitle": "AI Assistant",
+    "welcomeTitle": "AI Assistant",
+    "welcomeSubtitle": "Ask a question about your tasks,\npriorities or plans",
+    "inputHint": "Enter your query...",
+    "modelInitializing": "Loading model...",
+    "modelPreparing": "Preparing AI assistant...",
+    "modelDownloadProgress": "Model download: {percent}%",
+    "modelLoadError": "Model load error: {error}",
+    "modelNotReady": "LLM model is not loaded yet. Please wait for the download to complete.",
+    "generationError": "An error occurred while generating the response.",
+    "genericError": "Error: {error}",
+    "sendButtonTooltip": "Send",
+    "loadingResponse": "AI response...",
+    "downloadDialogTitle": "Download model",
+    "downloadModelButton": "Download model",
+    "cancel": "Cancel",
+    "selectModelTitle": "Select model",
+    "noDownloadedModels": "You have no downloaded models",
+    "yourModels": "Your models:",
+    "modelError": "Error: {error}",
+    "modelLoadErrorChat": "Model load error. Select a model in settings.",
+    "modelNotLoadedChat": "LLM model is not loaded. Select a model in settings.",
+    "modelReadyIndicator": "✓ {name}",
+    "modelNotReadyIndicator": "⚠ Model not ready",
+    "selectModelForWork": "Select a model to start",
+    "selectModelAction": "Select model"
   }
 }

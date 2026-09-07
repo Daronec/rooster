@@ -22,4 +22,3 @@ final class TaskEstimatedCostField extends StatelessWidget {
     );
   }
 }
-

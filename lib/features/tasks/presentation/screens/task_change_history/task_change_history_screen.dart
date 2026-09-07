@@ -45,4 +45,3 @@ TaskChangeHistoryScreenWidgetModel taskChangeHistoryScreenWidgetModelFactory(
     logWriter: scope.logger,
   );
 }
-

@@ -1,7 +1,8 @@
 import 'dart:async';
-
 import 'dart:ffi' as ffi;
+import 'dart:io' as io;
 
+import 'package:flutter/foundation.dart';
 import 'package:rooster/features/ai/data/llm_native_bindings.dart';
 import 'package:rooster/features/ai/data/llm_library_loader.dart';
 import 'package:rooster/features/ai/domain/gateways/i_local_llm_gateway.dart';
@@ -30,16 +31,32 @@ final class LocalLLMGatewayImpl implements ILocalLLMGateway {
       final handle = await bindings.init(modelPath);
       
       if (handle == null || handle.address == 0) {
-        throw Exception('Failed to load LLM model from $modelPath');
+        debugPrint('[LocalLLMGateway] Native llm_init returned null');
+        debugPrint('[LocalLLMGateway] Model path: $modelPath');
+        
+        // Check if file exists and is readable
+        final file = io.File(modelPath);
+        if (!await file.exists()) {
+          throw Exception('Model file not found: $modelPath');
+        }
+        final fileSize = await file.length();
+        debugPrint('[LocalLLMGateway] File size: $fileSize bytes');
+        
+        throw Exception(
+          'Failed to load model. Native library may not be compiled or model format unsupported. '
+          'File exists: ${await file.exists()}, size: $fileSize bytes',
+        );
       }
 
       _bindings = bindings;
       _handle = handle;
       _modelInfo = bindings.getInfo(handle);
       _isInitialized = true;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('[LocalLLMGateway] Initialization error: $e');
+      debugPrint('[LocalLLMGateway] Stack: $stackTrace');
       _isInitialized = false;
-      throw Exception('LLM initialization error: $e');
+      rethrow;
     }
   }
 

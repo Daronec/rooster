@@ -795,5 +795,33 @@
     "shareSubject": "Задача в Rooster",
     "loadError": "Не удалось загрузить задачу",
     "openFullscreenSemantics": "Открыть изображение на весь экран"
+  },
+  "ai": {
+    "screenTitle": "AI Ассистент",
+    "welcomeTitle": "AI Ассистент",
+    "welcomeSubtitle": "Задайте вопрос о ваших задачах,\nприоритетах или планах",
+    "inputHint": "Введите запрос...",
+    "modelInitializing": "Модель загружается...",
+    "modelPreparing": "Подготовка AI ассистата...",
+    "modelDownloadProgress": "Загрузка модели: {percent}%",
+    "modelLoadError": "Ошибка загрузки модели: {error}",
+    "modelNotReady": "Модель LLM ещё не загружена. Пожалуйста, подождите завершения загрузки.",
+    "generationError": "Произошла ошибка при генерации ответа.",
+    "genericError": "Ошибка: {error}",
+    "sendButtonTooltip": "Отправить",
+    "loadingResponse": "Ответ от AI...",
+    "downloadDialogTitle": "Скачать модель",
+    "downloadModelButton": "Скачать модель",
+    "cancel": "Отмена",
+    "selectModelTitle": "Выбор модели",
+    "noDownloadedModels": "У вас нет скачанных моделей",
+    "yourModels": "Ваши модели:",
+    "modelError": "Ошибка: {error}",
+    "modelLoadErrorChat": "Ошибка загрузки модели. Выберите модель в настройках.",
+    "modelNotLoadedChat": "Модель LLM не загружена. Выберите модель в настройках.",
+    "modelReadyIndicator": "✓ {name}",
+    "modelNotReadyIndicator": "⚠ Модель не готова",
+    "selectModelForWork": "Выберите модель для начала работы",
+    "selectModelAction": "Выбрать модель"
   }
 }

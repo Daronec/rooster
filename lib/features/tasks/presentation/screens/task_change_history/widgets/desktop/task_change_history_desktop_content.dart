@@ -33,4 +33,3 @@ class TaskChangeHistoryDesktopContent extends StatelessWidget {
     );
   }
 }
-
