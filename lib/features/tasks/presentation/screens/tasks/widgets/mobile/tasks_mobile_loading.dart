@@ -19,8 +19,8 @@ class TasksMobileLoading extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = AppColorScheme.of(context);
     return AppScaffold(
-      appBar: const DefaultAppBar(
-        title: Text('Задачи'),
+      appBar: DefaultAppBar(
+        title: Text(TasksStrings.loadingAppBarTitle(context)),
         withBackButton: false,
       ),
       floatingActionButton: FloatingActionButton(

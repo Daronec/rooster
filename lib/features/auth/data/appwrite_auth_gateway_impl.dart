@@ -90,7 +90,9 @@ final class AppwriteAuthGatewayImpl implements IAuthGateway {
       await _persistSessionSecret(currentSession);
     } on AppwriteException catch (error) {
       if (kDebugMode) {
-        _logger.log('appwrite_auth_current_session_secret_skip ${error.message}');
+        _logger.log(
+          'appwrite_auth_current_session_secret_skip ${error.message}',
+        );
       }
     }
   }

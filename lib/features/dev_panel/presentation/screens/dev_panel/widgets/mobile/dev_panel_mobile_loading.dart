@@ -18,7 +18,7 @@ class DevPanelMobileLoading extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: DefaultAppBar(
-        title: const Text('Dev / Sync'),
+        title: Text(DevPanelStrings.screenTitle(context)),
         actions: <Widget>[
           IconButton(
             onPressed: wm.refresh,

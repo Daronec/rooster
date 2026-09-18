@@ -10,7 +10,6 @@ import 'package:rooster/core/domain/service/app_information_service.dart';
 /// {@endtemplate}
 class AppInformationRepository extends BaseRepository
     implements IAppInformationRepository {
-
   /// {@macro app_information_repository.dart}
   AppInformationRepository({
     required IAppInformationService appInformationService,

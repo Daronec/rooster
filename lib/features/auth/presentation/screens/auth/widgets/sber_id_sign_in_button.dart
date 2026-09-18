@@ -19,7 +19,7 @@ class SberIdSignInButton extends StatelessWidget {
   final VoidCallback? onSignInSuccess;
 
   /// Callback при ошибке входа.
-  final Function(Object error)? onSignInError;
+  final void Function(Object error)? onSignInError;
 
   @override
   Widget build(BuildContext context) {

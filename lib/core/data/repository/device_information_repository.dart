@@ -9,7 +9,6 @@ import 'package:rooster/core/domain/service/device_information_service.dart';
 /// {@macro device_information_repository}
 class DeviceInformationRepository extends BaseRepository
     implements IDeviceInformationRepository {
-
   /// {@macro device_information_repository}
   DeviceInformationRepository({
     required super.logWriter,

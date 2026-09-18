@@ -116,7 +116,7 @@ class _MaterialShortagesBlock extends StatelessWidget {
         border: Border.all(color: colorScheme.gray200),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppSizes.double12),
+        padding: AppSizes.edgeInsetsAll12,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -146,9 +146,7 @@ class _MaterialShortagesBlock extends StatelessWidget {
                   children: shortages
                       .map(
                         (shortage) => Padding(
-                          padding: const EdgeInsets.only(
-                            bottom: AppSizes.double8,
-                          ),
+                          padding: AppSizes.edgeInsetsBottom8,
                           child: Text(
                             TasksDecisionStrings.resourcesShortageLine(
                               context,

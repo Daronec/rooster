@@ -2,6 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:rooster/core/sync/i_sync_manager.dart';
 import 'package:rooster/core/sync/i_sync_remote_executor.dart';
 import 'package:rooster/features/auth/data/appwrite_auth_gateway_impl.dart';
+import 'package:rooster/features/auth/data/sber_id_auth_gateway_impl.dart';
 import 'package:rooster/features/auth/di/auth_backend_assembly_context.dart';
 import 'package:rooster/features/auth/di/auth_backend_assembly_result.dart';
 import 'package:rooster/features/auth/di/i_auth_backend_assembly_strategy.dart';
@@ -98,6 +99,14 @@ final class AppwriteAuthBackendAssemblyStrategy
       bindInboundCloudSync = null;
     }
 
+    final sberIdGateway = SberIdAuthGatewayImpl(
+      client: client,
+      account: account,
+      envConfig: env,
+      sessionStorage: appwriteSessionStorage,
+      logger: context.logger,
+    );
+
     return AuthBackendAssemblyResult(
       authGateway: authGateway,
       remoteExecutor: remoteExecutor,
@@ -110,6 +119,7 @@ final class AppwriteAuthBackendAssemblyStrategy
         logger: context.logger,
       ),
       teamsGateway: teamsGateway,
+      sberIdGateway: sberIdGateway,
       bindInboundCloudSync: bindInboundCloudSync,
     );
   }

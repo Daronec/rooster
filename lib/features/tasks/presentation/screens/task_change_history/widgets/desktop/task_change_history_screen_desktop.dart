@@ -26,5 +26,3 @@ class TaskChangeHistoryScreenDesktop extends StatelessWidget {
     );
   }
 }
-
-

@@ -5,7 +5,6 @@ import 'package:rooster/common/utils/snack_queue/presentation/snack_message_type
 /// Display information for the snack.
 @immutable
 class TopSnackBar {
-
   /// Create an instance [TopSnackBar].
   TopSnackBar({
     required this.message,
@@ -16,6 +15,7 @@ class TopSnackBar {
        dialogDecoration = dialogDecoration ?? _defaultDialogDecoration,
        animationConfiguration =
            animationConfiguration ?? _defaultAnimationConfiguration;
+
   /// Message in the snack.
   final String message;
 
@@ -36,9 +36,10 @@ class TopSnackBar {
   /// Default is [EasyDialogAnimationConfiguration.bounded].
   final EasyDialogAnimationConfiguration animationConfiguration;
 
-  static const EasyDialogDecoration<EasyDialog> _defaultDialogDecoration = EasyDialogDecoration.combine([
-    EasyDialogAnimation.expansion(),
-  ]);
+  static const EasyDialogDecoration<EasyDialog> _defaultDialogDecoration =
+      EasyDialogDecoration.combine([
+        EasyDialogAnimation.expansion(),
+      ]);
   static const _defaultAnimationConfiguration =
       EasyDialogAnimationConfiguration.bounded();
 

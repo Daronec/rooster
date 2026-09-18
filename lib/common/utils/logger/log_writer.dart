@@ -6,7 +6,6 @@ import 'package:surf_logger/surf_logger.dart' as surf_logger;
 /// Implementation of [ILogWriter].
 /// {@endtemplate}
 final class LogWriter implements ILogWriter {
-
   /// {@macro log_writer.class}
   const LogWriter(this._logWriter);
   final surf_logger.LogWriter _logWriter;

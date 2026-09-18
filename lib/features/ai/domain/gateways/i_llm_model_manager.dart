@@ -47,7 +47,10 @@ final class LlmInitResult {
   final double downloadProgress;
 
   /// Creates a success result.
-  factory LlmInitResult.success(String modelPath, {double downloadProgress = 0.0}) {
+  factory LlmInitResult.success(
+    String modelPath, {
+    double downloadProgress = 0.0,
+  }) {
     return LlmInitResult(
       success: true,
       modelPath: modelPath,
@@ -56,7 +59,10 @@ final class LlmInitResult {
   }
 
   /// Creates a failure result.
-  factory LlmInitResult.failure(String errorMessage, {double downloadProgress = 0.0}) {
+  factory LlmInitResult.failure(
+    String errorMessage, {
+    double downloadProgress = 0.0,
+  }) {
     return LlmInitResult(
       success: false,
       errorMessage: errorMessage,

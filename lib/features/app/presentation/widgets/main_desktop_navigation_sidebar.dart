@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rooster/features/app/presentation/strings/main_desktop_navigation_strings.dart';
 import 'package:rooster/features/navigation/desktop_main_navigation_bridge.dart';
 import 'package:rooster/features/planning/presentation/strings/planning_strings.dart';
 import 'package:rooster/features/tasks/presentation/strings/tasks_strings.dart';
@@ -111,7 +112,7 @@ class _SidebarHeader extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                'Rooster',
+                MainDesktopNavigationStrings.appName(context),
                 style: textStyle.t20.copyWith(color: colorScheme.white),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

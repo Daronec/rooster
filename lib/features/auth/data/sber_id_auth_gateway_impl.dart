@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/enums.dart' as appwrite_enums;
-import 'package:appwrite/models.dart' as aw_models;
 import 'package:flutter/foundation.dart';
 import 'package:rooster/common/utils/logger/i_log_writer.dart';
 import 'package:rooster/config/appwrite_env_config.dart';
@@ -40,15 +39,15 @@ final class SberIdAuthGatewayImpl implements ISberIdGateway {
       // Используем кастомный OAuth2 провайдер для Sber ID.
       // В Appwrite Console должен быть настроен Custom Provider с именем 'sberid'.
       await _account.createOAuth2Session(
-        provider: appwrite_enums.OAuthProvider.custom,
+        provider: appwrite_enums.OAuthProvider.auth0,
         success: _envConfig.oauthSuccessUrl,
         failure: _envConfig.oauthFailureUrl,
-        scopes: 'openid profile email',
+        scopes: ['openid profile email'],
       );
 
       // Получаем данные пользователя после успешной авторизации.
       final user = await _account.get();
-      
+
       // Сохраняем сессию.
       await _tryPersistCurrentSessionSecret();
 

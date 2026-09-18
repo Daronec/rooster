@@ -19,6 +19,12 @@ final class TaskListsStrings {
   static String screenTitle(BuildContext context) =>
       FlutterI18n.translate(context, 'taskLists.screenTitle');
 
+  static String loadingAppBarTitle(BuildContext context) =>
+      FlutterI18n.translate(context, 'taskLists.loadingAppBarTitle');
+
+  static String errorAppBarTitle(BuildContext context) =>
+      FlutterI18n.translate(context, 'taskLists.errorAppBarTitle');
+
   static String deleteConfirmTitle(BuildContext context) =>
       FlutterI18n.translate(context, 'taskLists.deleteConfirmTitle');
 

@@ -28,6 +28,8 @@ import 'package:rooster/features/tasks/presentation/screens/create_task/create_t
 import 'package:rooster/features/tasks/presentation/sounds/i_task_completion_sound_player.dart';
 import 'package:rooster/features/tasks/presentation/strings/create_tasks_strings.dart';
 import 'package:rooster/features/tasks/presentation/strings/tasks_strings.dart';
+import 'package:rooster/uikit/buttons/app_black_button.dart';
+import 'package:rooster/uikit/text/app_text_style.dart';
 import 'package:rooster/uikit/fields/widgets/common/app_dropdown.dart';
 import 'package:rooster/uikit/layout_helpers/height.dart';
 import 'package:rooster/uikit/layout_helpers/width.dart';
@@ -418,17 +420,18 @@ class CreateTaskScreenWidgetModel
         descriptionController.text.trim().isEmpty) {
       descriptionController.text = initialDescription;
     }
-    if (_formState.parentTaskId == null || _formState.parentTaskId!.isEmpty) {
+    final parentTaskId = _formState.parentTaskId;
+    if (parentTaskId == null || parentTaskId.isEmpty) {
       return;
     }
-    final parent = await model.loadTask(_formState.parentTaskId!);
+    final parent = await model.loadTask(parentTaskId);
     if (parent == null) {
       _formState.setParentTaskId(null);
       return;
     }
-    if (_formState.selectedListId == null ||
-        _formState.selectedListId!.isEmpty) {
-      _formState.setSelectedListId(parent.listId);
+    final selectedListId = _formState.selectedListId;
+    if (selectedListId == null || selectedListId.isEmpty) {
+      _formState.setSelectedListId(selectedListId ?? parent.listId);
     }
   }
 
@@ -715,7 +718,7 @@ class CreateTaskScreenWidgetModel
               children: <Widget>[
                 Text(
                   CreateTasksStrings.pickParentTaskTitle(sheetContext),
-                  style: Theme.of(sheetContext).textTheme.titleMedium,
+                  style: AppTextStyle.t16Medium.value,
                 ),
                 const Height(AppSizes.double12),
                 if (candidates.isEmpty)
@@ -739,7 +742,7 @@ class CreateTaskScreenWidgetModel
                 Row(
                   children: <Widget>[
                     Expanded(
-                      child: OutlinedButton(
+                      child: AppBlackButton(
                         onPressed: () {
                           sheetContext.router.pop();
                         },
@@ -854,7 +857,7 @@ class CreateTaskScreenWidgetModel
           title: Text(TasksStrings.deleteConfirmTitle(context)),
           content: Text(TasksStrings.deleteConfirmMessage(context)),
           actions: <Widget>[
-            TextButton(
+            AppBlackButton(
               onPressed: () => dialogContext.router.pop(false),
               child: Text(TasksStrings.deleteCancel(context)),
             ),
@@ -893,7 +896,7 @@ class CreateTaskScreenWidgetModel
           title: Text(TasksStrings.deleteConfirmTitle(context)),
           content: Text(TasksStrings.deleteConfirmMessage(context)),
           actions: <Widget>[
-            TextButton(
+            AppBlackButton(
               onPressed: () => dialogContext.router.pop(false),
               child: Text(TasksStrings.deleteCancel(context)),
             ),

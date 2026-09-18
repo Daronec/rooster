@@ -29,11 +29,11 @@ final class LocalLLMGatewayImpl implements ILocalLLMGateway {
     try {
       final bindings = LlmNativeBindings(LlmLibraryLoader.load());
       final handle = await bindings.init(modelPath);
-      
+
       if (handle == null || handle.address == 0) {
         debugPrint('[LocalLLMGateway] Native llm_init returned null');
         debugPrint('[LocalLLMGateway] Model path: $modelPath');
-        
+
         // Check if file exists and is readable
         final file = io.File(modelPath);
         if (!await file.exists()) {
@@ -41,7 +41,7 @@ final class LocalLLMGatewayImpl implements ILocalLLMGateway {
         }
         final fileSize = await file.length();
         debugPrint('[LocalLLMGateway] File size: $fileSize bytes');
-        
+
         throw Exception(
           'Failed to load model. Native library may not be compiled or model format unsupported. '
           'File exists: ${await file.exists()}, size: $fileSize bytes',
@@ -71,8 +71,13 @@ final class LocalLLMGatewayImpl implements ILocalLLMGateway {
     }
 
     try {
-      final result = await _bindings!.generate(
-        _handle!,
+      final bindings = _bindings;
+      final handle = _handle;
+      if (bindings == null || handle == null) {
+        return null;
+      }
+      final result = await bindings.generate(
+        handle,
         prompt,
         maxTokens: maxTokens,
         temperature: temperature,
@@ -85,8 +90,10 @@ final class LocalLLMGatewayImpl implements ILocalLLMGateway {
 
   @override
   void dispose() {
-    if (_handle != null && _handle!.address != 0) {
-      _bindings?.dispose(_handle!);
+    final handle = _handle;
+    if (handle != null && handle.address != 0) {
+      final bindings = _bindings;
+      bindings?.dispose(handle);
       _handle = null;
       _bindings = null;
       _isInitialized = false;

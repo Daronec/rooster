@@ -48,7 +48,7 @@ class DecisionBlockedBody extends StatelessWidget {
       unionStateListenable: bodyState,
       loadingBuilder: (context, last) => const Center(
         child: Padding(
-          padding: EdgeInsets.all(AppSizes.double24),
+          padding: AppSizes.edgeInsetsAll24,
           child: CircularProgressIndicator(),
         ),
       ),
@@ -150,7 +150,7 @@ class _BlockedTaskTile extends StatelessWidget {
           ? entry.task.title
           : '${entry.task.title}. $semanticsLabel',
       child: Card(
-        margin: const EdgeInsets.only(bottom: AppSizes.double8),
+        margin: const EdgeInsets.only(bottom: 8),
         color: colorScheme.white,
         child: InkWell(
           onTap: onOpen,

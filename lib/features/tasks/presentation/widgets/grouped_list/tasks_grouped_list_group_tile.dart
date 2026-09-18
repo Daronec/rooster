@@ -36,7 +36,7 @@ final class TasksGroupedListGroupTile extends StatelessWidget {
     final colorScheme = AppColorScheme.of(context);
     final textScheme = AppTextScheme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSizes.double8),
+      padding: AppSizes.edgeInsetsBottom8,
       child: ExpansionTile(
         key: ValueKey<String>('${group.listId}_$isExpanded'),
         maintainState: true,

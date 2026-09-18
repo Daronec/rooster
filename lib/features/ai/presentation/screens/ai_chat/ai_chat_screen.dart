@@ -8,7 +8,6 @@ import 'package:rooster/features/ai/presentation/screens/ai_chat/ai_chat_wm.dart
 import 'package:rooster/features/ai/presentation/screens/ai_chat/widgets/ai_chat_init_progress.dart';
 import 'package:rooster/features/ai/presentation/screens/ai_chat/widgets/ai_chat_input_field.dart';
 import 'package:rooster/features/ai/presentation/screens/ai_chat/widgets/ai_chat_message_bubble.dart';
-import 'package:rooster/features/ai/presentation/screens/ai_chat/widgets/ai_chat_welcome_message.dart';
 import 'package:rooster/features/ai/presentation/strings/ai_chat_strings.dart';
 import 'package:rooster/features/app/di/app_scope.dart';
 
@@ -19,10 +18,12 @@ class AiChatScreen extends BaseWidget<AiChatScreenWidgetModel> {
   const AiChatScreen({super.key}) : super(aiChatScreenWidgetModelFactory);
 
   @override
-  Widget buildDesktop(AiChatScreenWidgetModel wm) => _AiChatScreenContent(wm: wm);
+  Widget buildDesktop(AiChatScreenWidgetModel wm) =>
+      _AiChatScreenContent(wm: wm);
 
   @override
-  Widget buildMobile(AiChatScreenWidgetModel wm) => _AiChatScreenContent(wm: wm);
+  Widget buildMobile(AiChatScreenWidgetModel wm) =>
+      _AiChatScreenContent(wm: wm);
 }
 
 /// Фабрика [AiChatScreenWidgetModel].
@@ -177,5 +178,4 @@ class _AiChatScreenContent extends StatelessWidget {
       ),
     );
   }
-
 }

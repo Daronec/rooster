@@ -7,6 +7,7 @@ import 'package:rooster/core/sync/i_sync_manager.dart';
 import 'package:rooster/core/sync/i_sync_queue.dart';
 import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
+import 'package:rooster/features/auth/domain/gateways/i_sber_id_gateway.dart';
 import 'package:rooster/features/planning/domain/repositories/i_planning_repository.dart';
 import 'package:rooster/features/profile/domain/gateways/i_profile_avatar_gateway.dart';
 import 'package:rooster/features/profile/domain/gateways/i_profile_personal_data_gateway.dart';
@@ -60,6 +61,9 @@ abstract interface class IAppScope {
 
   /// Авторизация.
   IAuthGateway get authGateway;
+
+  /// Вход через Sber ID.
+  ISberIdGateway get sberIdGateway;
 
   /// Аватар профиля (облако / локально в зависимости от бэкенда).
   IProfileAvatarGateway get profileAvatarGateway;
@@ -138,6 +142,7 @@ final class AppScope implements IAppScope {
     required this.authBackendStrategy,
     required this.isLikelyHuaweiOrHonorAndroidForAuthUi,
     required this.authGateway,
+    required this.sberIdGateway,
     required this.profileAvatarGateway,
     required this.profilePersonalDataGateway,
     required this.teamsGateway,
@@ -189,6 +194,9 @@ final class AppScope implements IAppScope {
 
   @override
   final IAuthGateway authGateway;
+
+  @override
+  final ISberIdGateway sberIdGateway;
 
   @override
   final IProfileAvatarGateway profileAvatarGateway;

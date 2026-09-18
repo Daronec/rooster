@@ -93,7 +93,7 @@ class _AppBaseButtonState extends State<AppBaseButton> {
               maxLines: 1,
               softWrap: true,
               overflow: TextOverflow.ellipsis,
-              child: widget.subtitle!,
+              child: widget.subtitle ?? const SizedBox.shrink(),
             ),
           ],
         );

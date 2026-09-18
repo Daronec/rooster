@@ -47,7 +47,6 @@ abstract class BaseWidgetModel<
 >
     extends WidgetModel<W, M>
     implements IBaseWidgetModel {
-
   /// Создать экземпляр [BaseWidgetModel].
   BaseWidgetModel(
     super._model, {

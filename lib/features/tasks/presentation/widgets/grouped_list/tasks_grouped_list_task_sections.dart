@@ -78,10 +78,7 @@ final class TasksGroupedListSectionTitle extends StatelessWidget {
     final textScheme = AppTextScheme.of(context);
     final colorScheme = AppColorScheme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(
-        bottom: AppSizes.double8,
-        left: AppSizes.double16,
-      ),
+      padding: AppSizes.edgeInsetsBL16_8,
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(

@@ -140,9 +140,15 @@
     "teamsOperationFailed": "Не удалось выполнить операцию с командой"
   },
   "devPanel": {
+    "screenTitle": "Dev / Sync",
     "loadingBody": "Загрузка…",
     "loadError": "Не удалось загрузить панель разработчика",
-    "retryBody": "Повторить"
+    "retryBody": "Повторить",
+    "syncStatusLabel": "Статус: {status}",
+    "networkIndicatorLabel": "Сеть (индикатор): {status}",
+    "syncPausedLabel": "Пауза исходящего sync",
+    "syncQueueAccumulatingLabel": "Очередь копится локально",
+    "queueLabel": "Очередь:"
   },
   "rootAuthGate": {
     "loadingBody": "Запуск…",
@@ -154,6 +160,8 @@
     "loadError": "Не удалось загрузить списки",
     "retryBody": "Повторить",
     "screenTitle": "Списки",
+    "loadingAppBarTitle": "Списки",
+    "errorAppBarTitle": "Списки",
     "deleteConfirmTitle": "Удалить список?",
     "deleteConfirmMessage": "Список будет удалён на этом устройстве и синхронизирован при подключении к сети.",
     "deleteCancel": "Отмена",
@@ -222,6 +230,7 @@
     "closeInvalidRoute": "Закрыть"
   },
   "mainDesktopNav": {
+    "appName": "Rooster",
     "summary": "Сводка",
     "home": "Дом",
     "rooms": "Комнаты",
@@ -570,6 +579,8 @@
     "loadError": "Не удалось загрузить задачи",
     "retryBody": "Повторить",
     "screenTitle": "Задачи",
+    "loadingAppBarTitle": "Задачи",
+    "errorAppBarTitle": "Задачи",
     "emptyState": "Нет задач. Нажмите +, чтобы добавить.",
     "unknownList": "Другой список",
     "groupTaskCount": "Задач: {count}",

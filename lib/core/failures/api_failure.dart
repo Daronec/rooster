@@ -5,7 +5,6 @@ import 'package:rooster/core/architecture/domain/entity/failure.dart';
 /// API error.
 /// {@endtemplate}
 base class ApiFailure extends Failure<Exception> {
-
   /// {@macro api_failure.class}
   const ApiFailure({
     required super.original,
@@ -15,6 +14,7 @@ base class ApiFailure extends Failure<Exception> {
     this.message,
     this.infoErrors = const [],
   });
+
   /// Special error status code parsed from the response body.
   /// Special status codes are described below and are checked through getters.
   final int? statusCode;
