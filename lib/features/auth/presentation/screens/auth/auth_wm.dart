@@ -15,6 +15,7 @@ import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
 import 'package:rooster/features/auth/domain/cloud_auth_unavailable_exception.dart';
 import 'package:rooster/features/auth/domain/cloud_auth_unavailable_reason.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
+import 'package:rooster/features/auth/domain/gateways/i_sber_id_gateway.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_model.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_screen.dart';
 import 'package:rooster/features/navigation/app_router.dart';
@@ -33,13 +34,17 @@ class AuthScreenWidgetModel
     super.model, {
     required super.snackController,
     required ILogWriter logWriter,
+    required ISberIdGateway sberIdGateway,
   }) : bodyState = UnionStateNotifier<EmptyScreenBody>(EmptyScreenBody.instance),
+       _sberIdGateway = sberIdGateway,
        super(
          handledFailureLogWriter: logWriter,
        );
 
   /// Состояние тела экрана (для [UnionStateListenableBuilder]).
   final UnionStateNotifier<EmptyScreenBody> bodyState;
+
+  final ISberIdGateway _sberIdGateway;
 
   StreamSubscription<AppAuthUserEntity?>? _authSub;
 
@@ -48,6 +53,9 @@ class AuthScreenWidgetModel
 
   /// Поле пароля.
   late final TextEditingController passwordFieldController;
+
+  /// Gateway для входа через Sber ID.
+  ISberIdGateway get sberIdGateway => _sberIdGateway;
 
   /// Вернуть тело экрана в состояние контента после ошибки.
   void retryScreenBody() {
@@ -132,6 +140,12 @@ class AuthScreenWidgetModel
     } on Object catch (error) {
       _onAuthFlowObjectError(error);
     }
+  }
+
+  /// Вход через Sber ID.
+  Future<void> onSberIdSignInSuccess() async {
+    // Успешный вход через Sber ID - переходим на главный экран
+    _navigateMain();
   }
 
   /// Вход по email и паролю.

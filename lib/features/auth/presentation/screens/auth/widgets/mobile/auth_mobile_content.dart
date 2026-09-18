@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_wm.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/widgets/auth_appwrite_email_section.dart';
+import 'package:rooster/features/auth/presentation/screens/auth/widgets/sber_id_sign_in_button.dart';
 import 'package:rooster/uikit/layout_helpers/height.dart';
 import 'package:rooster/uikit/scaffold/app_scaffold.dart';
 import 'package:rooster/uikit/scaffold/default_app_bar.dart';
@@ -60,6 +61,12 @@ class AuthMobileContent extends StatelessWidget {
               ),
               const Height(AppSizes.double8),
             ],
+            // Кнопка Sber ID (всегда показывается для тестирования)
+            SberIdSignInButton(
+              gateway: wm.sberIdGateway,
+              onSignInSuccess: wm.onSberIdSignInSuccess,
+            ),
+            const Height(AppSizes.double8),
           ],
         ),
       ),

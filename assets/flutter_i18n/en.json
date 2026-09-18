@@ -84,7 +84,10 @@
     "storageErrorSnack": "Could not save data",
     "loadingBody": "Loading…",
     "loadBodyError": "Could not prepare the screen",
-    "retryLoadBody": "Retry"
+    "retryLoadBody": "Retry",
+    "providerSber": "Sber ID",
+    "sberSignInFailed": "Failed to sign in with Sber ID",
+    "sberIdUnavailable": "Sber ID is not available on this device"
   },
   "profile": {
     "screenTitle": "Profile",
