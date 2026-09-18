@@ -88,7 +88,10 @@
     "googleSignInFailedPlayServices": "Вход через Google недоступен: проверьте сервисы Google Play на устройстве и настройки OAuth в консоли Appwrite.",
     "googleSignInFailedDeveloper": "Не удалось войти через Google. В консоли Appwrite включите провайдер Google OAuth2 и проверьте redirect / deep link для приложения.",
     "firebaseAuthConfigurationMissing": "Авторизация в Firebase не настроена: в консоли Firebase откройте Authentication → Sign-in method, нажмите «Начать» при необходимости и включите «Анонимный» (и другие нужные провайдеры).",
-    "firebaseAuthAdminRestrictedOperation": "Вход заблокирован настройками Firebase: включите «Анонимный» в Authentication → Sign-in method; в Authentication → Settings разрешите действия пользователей (создание аккаунта). Если включён App Check — добавьте debug-токен или отключите enforcement для разработки."
+    "firebaseAuthAdminRestrictedOperation": "Вход заблокирован настройками Firebase: включите «Анонимный» в Authentication → Sign-in method; в Authentication → Settings разрешите действия пользователей (создание аккаунта). Если включён App Check — добавьте debug-токен или отключите enforcement для разработки.",
+    "providerSber": "Сбер ID",
+    "sberSignInFailed": "Не удалось войти через Сбер ID",
+    "sberIdUnavailable": "Сбер ID недоступен на этом устройстве"
   },
   "profile": {
     "screenTitle": "Профиль",
