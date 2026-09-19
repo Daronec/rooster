@@ -27,6 +27,9 @@ abstract interface class IAuthGateway {
   /// Вход через HUAWEI ID (HMS).
   Future<void> signInWithHuawei();
 
+  /// Вход через Sber ID (OAuth Appwrite custom provider).
+  Future<void> signInWithSberId();
+
   /// Анонимная сессия (если шлюз поддерживает; иначе исключение).
   Future<void> signInAnonymously();
 

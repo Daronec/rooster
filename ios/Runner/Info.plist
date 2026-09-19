@@ -45,16 +45,30 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Sber ID Client ID — настройте в личном кабинете разработчика Сбера -->
+	<key>SberClientId</key>
+	<string>YOUR_CLIENT_ID</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
 			<key>CFBundleURLName</key>
 			<string>ru.aronets.rooster</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>rooster</string>
+				<!-- Sber ID OAuth callback (App-to-App / Browser SSO) -->
+				<!-- Должен совпадать с host в Android intent-filter и Redirect URI в кабинете Сбера -->
+				<string>rooster-auth</string>
 			</array>
 		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<!-- Проверка наличия приложения СберБанк Онлайн -->
+		<string>sberbank</string>
+		<string>sberbankonline</string>
 	</array>
 </dict>
 </plist>

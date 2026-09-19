@@ -91,7 +91,8 @@
     "firebaseAuthAdminRestrictedOperation": "Вход заблокирован настройками Firebase: включите «Анонимный» в Authentication → Sign-in method; в Authentication → Settings разрешите действия пользователей (создание аккаунта). Если включён App Check — добавьте debug-токен или отключите enforcement для разработки.",
     "providerSber": "Сбер ID",
     "sberSignInFailed": "Не удалось войти через Сбер ID",
-    "sberIdUnavailable": "Сбер ID недоступен на этом устройстве"
+    "sberIdUnavailable": "Сбер ID недоступен на этом устройстве",
+    "userCancelled": "Вход отменён"
   },
   "profile": {
     "screenTitle": "Профиль",

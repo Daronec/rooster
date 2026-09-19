@@ -13,5 +13,8 @@ final class NoopSberIdGatewayImpl implements ISberIdGateway {
   Future<SberIdUserEntity?> signInWithSberId() async => null;
 
   @override
+  void dispose() {}
+
+  @override
   Future<void> signOut() async {}
 }

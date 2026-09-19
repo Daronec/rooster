@@ -161,6 +161,23 @@ final class AppwriteAuthGatewayImpl implements IAuthGateway {
   }
 
   @override
+  Future<void> signInWithSberId() async {
+    debugPrint('AppwriteAuthGatewayImpl: starting Sber ID OAuth...');
+
+    await _account.createOAuth2Session(
+      provider: appwrite_enums.OAuthProvider.custom,
+      success: _envConfig.oauthSuccessUrl,
+      failure: _envConfig.oauthFailureUrl,
+      scopes: 'openid profile email',
+    );
+
+    final user = await _account.get();
+    _subject.add(_mapUser(user));
+    await _tryPersistCurrentSessionSecret();
+    _logger.log('appwrite_auth_oauth_sber_id_ok');
+  }
+
+  @override
   Future<void> signInAnonymously() async {
     throw CloudAuthUnavailableException(
       CloudAuthUnavailableReason.anonymousAuthNotSupported,

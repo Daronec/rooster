@@ -56,6 +56,11 @@ final class OfflineAuthGateway implements IAuthGateway {
   }
 
   @override
+  Future<void> signInWithSberId() async {
+    await signInWithGoogle();
+  }
+
+  @override
   Future<void> signInAnonymously() async {
     await signInWithGoogle();
   }

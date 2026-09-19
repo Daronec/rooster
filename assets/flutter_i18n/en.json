@@ -98,7 +98,8 @@
     "retryLoadBody": "Retry",
     "providerSber": "Sber ID",
     "sberSignInFailed": "Failed to sign in with Sber ID",
-    "sberIdUnavailable": "Sber ID is not available on this device"
+    "sberIdUnavailable": "Sber ID is not available on this device",
+    "userCancelled": "Sign-in cancelled"
   },
   "profile": {
     "screenTitle": "Profile",

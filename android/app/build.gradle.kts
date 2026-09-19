@@ -58,6 +58,11 @@ android {
                 readHuaweiAppIdFromAndroidLocalProperties(rootProject.layout.projectDirectory.asFile)
             }
         manifestPlaceholders["HUAWEI_APP_ID"] = huaweiAppId
+
+        // Sber ID Client ID — настройте в local.properties (sber.client.id=...)
+        val sberClientId = readSberClientIdFromLocalProperties(rootProject.layout.projectDirectory.asFile)
+        manifestPlaceholders["SBER_CLIENT_ID"] = sberClientId
+
         if (huaweiAppId.isEmpty()) {
             project.logger.lifecycle(
                 "[Huawei] Нет client app_id: добавьте android/app/agconnect-services.json, " +
@@ -120,6 +125,10 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+
+    // Sber ID SDK — нативный SDK для App-to-App авторизации (SberID).
+    // Документация: https://developers.sber.ru/docs/ru/sberid/sdk/androidsdk/connection
+    implementation('ru.sberid:sdk:2.0.0')
 }
 
 /**
@@ -187,6 +196,27 @@ private fun extractHuaweiAppIdFromAgConnectJson(jsonText: String): String {
         ?.get(1)
         ?.trim()
         .orEmpty()
+}
+
+/** Резерв: `sber.client.id=...` в [android/local.properties] (файл обычно не в git). */
+private fun readSberClientIdFromLocalProperties(androidRootDir: File): String {
+    val localProps = File(androidRootDir, "local.properties")
+    if (!localProps.isFile) {
+        return "YOUR_CLIENT_ID" // TODO: Замените на реальный Client ID
+    }
+    return try {
+        localProps
+            .readLines()
+            .map { line -> line.trim() }
+            .firstOrNull { line -> line.startsWith("sber.client.id=") }
+            ?.substringAfter("=", "")
+            ?.trim()
+            .orEmpty()
+            .takeIf { it.isNotEmpty() }
+            ?: "YOUR_CLIENT_ID" // TODO: Замените на реальный Client ID
+    } catch (_: Exception) {
+        "YOUR_CLIENT_ID" // TODO: Замените на реальный Client ID
+    }
 }
 
 /** Резерв: `huawei.app.id=...` в [android/local.properties] (файл обычно не в git). */

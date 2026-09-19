@@ -3,6 +3,8 @@ import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:rooster/features/auth/data/sber_auth_service.dart';
 
 /// Кнопка входа через нативное приложение Сбер ID.
+///
+/// Использует stream-based API для обработки асинхронного OAuth-флоу.
 class SberIdNativeSignInButton extends StatefulWidget {
   const SberIdNativeSignInButton({super.key});
 
@@ -14,42 +16,72 @@ class SberIdNativeSignInButton extends StatefulWidget {
 class _SberIdNativeSignInButtonState extends State<SberIdNativeSignInButton> {
   final SberAuthService _authService = SberAuthService();
   bool _isLoading = false;
+  StreamSubscription<SberAuthResult>? _authSubscription;
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    _authService.dispose();
+    super.dispose();
+  }
 
   Future<void> _handleSignIn(BuildContext context) async {
     if (_isLoading) return;
 
     setState(() => _isLoading = true);
 
-    try {
-      final token = await _authService.loginWithSber();
+    // Подписываемся на stream результатов авторизации
+    _authSubscription = _authService.authStream.listen(
+      _handleAuthResult,
+      onError: (error, stackTrace) {
+        debugPrint('SberIdNativeSignInButton: stream error: $error');
+        _finishLogin(context, error: 'auth.streamError');
+      },
+      onDone: () {
+        debugPrint('SberIdNativeSignInButton: stream closed');
+      },
+    );
 
-      if (!mounted) return;
+    // Запускаем OAuth-флоу
+    final started = await _authService.startLogin();
 
-      if (token != null) {
-        // TODO: Отправить токен на Backend и получить сессию
-        // await _authService.exchangeTokenForSession(token);
+    if (!started && mounted) {
+      _finishLogin(context, error: 'auth.sberSignInFailed');
+    }
+    // Результат придёт через authStream (onSberAuthSuccess / onSberAuthError)
+  }
 
-        if (mounted) {
-          // Навигация на главный экран после успешного входа
-          // Navigator.of(context).pushReplacementNamed('/home');
-        }
-      } else {
-        // Ошибка или отмена авторизации
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                FlutterI18n.translate(context, 'auth.sberSignInFailed'),
-              ),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
-        }
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+  void _handleAuthResult(SberAuthResult result) {
+    if (!mounted) return;
+
+    switch (result) {
+      case SberAuthSuccess(:final code):
+        // TODO: Отправить code на бэкенд для обмена на токен
+        // await _authService.exchangeCodeForToken(code);
+        debugPrint('SberIdNativeSignInButton: auth code received: $code');
+        Navigator.of(context).pushReplacementNamed('/home');
+
+      case SberAuthFailure(:final error, :final message):
+        debugPrint('SberIdNativeSignInButton: auth failed: $error - $message');
+        _finishLogin(
+          context,
+          error: error == 'SBER_ID_CANCELLED'
+              ? 'auth.userCancelled'
+              : 'auth.sberSignInFailed',
+        );
+    }
+  }
+
+  void _finishLogin(BuildContext context, {required String error}) {
+    _authSubscription?.cancel();
+    if (mounted) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(FlutterI18n.translate(context, error)),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 

@@ -15,6 +15,7 @@ import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
 import 'package:rooster/features/auth/domain/cloud_auth_unavailable_exception.dart';
 import 'package:rooster/features/auth/domain/cloud_auth_unavailable_reason.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
+import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
 import 'package:rooster/features/auth/domain/gateways/i_sber_id_gateway.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_model.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_screen.dart';
@@ -54,8 +55,11 @@ class AuthScreenWidgetModel
   /// Поле пароля.
   late final TextEditingController passwordFieldController;
 
-  /// Gateway для входа через Sber ID.
+  /// Gateway для входа через Sber ID (нативный SDK).
   ISberIdGateway get sberIdGateway => _sberIdGateway;
+
+  /// Основной шлюз авторизации (Appwrite).
+  IAuthGateway get authGateway => model.authGateway;
 
   /// Вернуть тело экрана в состояние контента после ошибки.
   void retryScreenBody() {

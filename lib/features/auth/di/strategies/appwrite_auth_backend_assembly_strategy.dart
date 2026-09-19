@@ -100,11 +100,7 @@ final class AppwriteAuthBackendAssemblyStrategy
     }
 
     final sberIdGateway = SberIdAuthGatewayImpl(
-      client: client,
-      account: account,
-      envConfig: env,
-      sessionStorage: appwriteSessionStorage,
-      logger: context.logger,
+      authGateway: authGateway,
     );
 
     return AuthBackendAssemblyResult(

@@ -9,4 +9,7 @@ abstract interface class ISberIdGateway {
 
   /// Проверить, доступен ли Sber ID на устройстве.
   bool get isSberIdAvailable;
+
+  /// Освободить ресурсы (stream subscriptions и т.д.).
+  void dispose();
 }

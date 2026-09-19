@@ -51,6 +51,21 @@
                     android:host="roosterapp.online"
                     android:pathPrefix="/task" />
             </intent-filter>
+            <!-- Sber ID OAuth callback (App-to-App / Browser SSO) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!--
+                    Redirect URI scheme для Sber ID OAuth callback.
+                    Должен совпадать с:
+                    1. scheme в Dart-коде (SberAuthService.redirectUriScheme)
+                    2. Redirect URI в личном кабинете разработчика Сбера
+                -->
+                <data
+                    android:scheme="rooster-auth"
+                    android:host="sber-id" />
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

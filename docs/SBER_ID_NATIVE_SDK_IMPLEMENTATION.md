@@ -1,310 +1,303 @@
-# Реализация авторизации через Sber ID (Нативный SDK)
+# Интеграция нативного SDK Сбер ID (App-to-App SSO) — Финальная реализация
 
-## Статус реализации: ✅ Готово (~95%)
-
-Реализована авторизация через нативный SDK Сбербанка (App-to-App SSO) без использования Appwrite.
+> На основе официальной документации: https://developers.sber.ru/docs/ru/sberid/sdk/androidsdk/connection
 
 ---
 
-## Архитектура
+## Оглавление
+
+1. [Обзор](#1-обзор)
+2. [Архитектура](#2-архитектура)
+3. [Что реализовано](#3-что-реализовано)
+4. [Native-часть](#4-native-часть)
+5. [Flutter-часть](#5-flutter-часть)
+6. [Настройка Client ID](#6-настройка-client-id)
+7. [Тестирование](#7-тестирование)
+8. [Ссылки](#8-ссылки)
+
+---
+
+## 1. Обзор
+
+Использование нативного приложения Сбербанка (App-to-App авторизация) — это **Single Sign-On (SSO)**. Если у пользователя уже установлено приложение Сбера и он там авторизован, ему не нужно вводить логин/пароль — достаточно подтвердить вход (часто через биометрию).
+
+### Ключевые отличия от OAuth2 через браузер
+
+| Аспект | OAuth2 URL | Native SDK |
+|--------|------------|------------|
+| Авторизация | Формирование URL + браузер | `SberId.login()` |
+| Callback | Intent/URL parsing | Callback из SDK |
+| Fallback | Всегда браузер | SDK сам выбирает (app → browser) |
+| Биометрия | Нет (веб-форма) | Да (Face ID / Touch ID) |
+| UX | Переход в браузер | Нативное приложение Сбера |
+
+---
+
+## 2. Архитектура
 
 ```
 Flutter App
     │
     ▼
-SberIdSignInButton (UI)
+SberIdNativeSignInButton.onPressed()
     │
     ▼
-SberIdAuthGatewayImpl (Domain Gateway)
+SberAuthService.startLogin()
     │
     ▼
-SberAuthService (MethodChannel)
+MethodChannel ('com.rooster.app/sber_auth') → 'startLogin'
+    │
+    ├── Android: SberId.login() → нативное приложение Сбера
+    └── iOS: SberId.login() → нативное приложение Сбера
     │
     ▼
-Native Platform Code (Kotlin/Swift)
+Нативное приложение Сбера (биометрия / сессия)
     │
     ▼
-Нативное приложение Сбера
+SberIdLoginCallback.onSuccess(code) / SberId.login callback
     │
     ▼
-Access Token → Backend для валидации
+EventChannel → Flutter Stream<SberAuthResult>
+    │
+    ▼
+SberAuthSuccess(code) → Backend exchange code for token
 ```
 
 ---
 
-## Созданные файлы
+## 3. Что реализовано
 
-### 1. Domain Layer
+### Android
 
-**Файл:** `lib/features/auth/domain/entities/sber_id_user_entity.dart`
-- Сущность пользователя с полями: `id`, `email`, `displayName`, `phone`, `accessToken`, `refreshToken`
-- Методы сериализации `fromJson()` и `toJson()`
+| Файл | Изменения |
+|------|-----------|
+| `android/app/build.gradle.kts` | Добавлена зависимость `ru.sberid:sdk:2.0.0` |
+| `android/app/src/main/AndroidManifest.xml` | Добавлен `intent-filter` для `rooster-auth://sber-id` |
+| `android/app/src/main/kotlin/.../MainActivity.kt` | `SberId.init()` + `SberId.login()` с `SberIdLoginCallback`, MethodChannel + EventChannel |
 
-**Файл:** `lib/features/auth/domain/gateways/i_sber_id_gateway.dart`
-- Контракт `ISberIdGateway` с методами:
-  - `Future<SberIdUserEntity?> signInWithSberId()`
-  - `bool get isSberIdAvailable`
+### iOS
 
-### 2. Data Layer
+| Файл | Изменения |
+|------|-----------|
+| `ios/Podfile` | Добавлен pod `SberId ~> 2.0.0` |
+| `ios/Runner/Info.plist` | Добавлен URL scheme `rooster-auth`, `LSApplicationQueriesSchemes`, `SberClientId` |
+| `ios/Runner/AppDelegate.swift` | `SberId.configure()` + `SberId.login()`, MethodChannel + EventChannel, URL handling |
 
-**Файл:** `lib/features/auth/data/sber_auth_service.dart`
-- Сервис `SberAuthService` для вызова нативного SDK через MethodChannel
-- Методы:
-  - `Future<String?> loginWithSber()` — получает access token
-  - `Future<bool> isSberIdAvailable()` — проверяет доступность SDK
-- Обработка ошибок: `SBER_ID_CANCELLED`, `SBER_ID_ERROR`
+### Flutter
 
-**Файл:** `lib/features/auth/data/sber_id_auth_gateway_impl.dart`
-- Реализация `SberIdAuthGatewayImpl implements ISberIdGateway`
-- Использует `SberAuthService` для получения токена
-- Возвращает `SberIdUserEntity` с токеном
-- **TODO:** Интеграция с бэкендом для валидации токена и получения данных пользователя
-
-### 3. Presentation Layer
-
-**Файл:** `lib/features/auth/presentation/screens/auth/widgets/sber_id_sign_in_button.dart`
-- Виджет кнопки `SberIdSignInButton`
-- Принимает `ISberIdGateway` и callbacks
-- Показывает индикатор загрузки и ошибки
-
-**Файл:** `lib/features/auth/presentation/screens/auth/widgets/sber_id_native_sign_in_button.dart`
-- Альтернативный виджет `SberIdNativeSignInButton` (StatefulWidget)
-- Прямое использование `SberAuthService`
-
-### 4. Локализация
-
-**Файлы:** `assets/flutter_i18n/ru.json`, `assets/flutter_i18n/en.json`
-- `auth.providerSber` — "Сбер ID" / "Sber ID"
-- `auth.sberSignInFailed` — "Не удалось войти через Сбер ID" / "Failed to sign in with Sber ID"
-- `auth.sberIdUnavailable` — "Сбер ID недоступен" / "Sber ID is not available"
-
-### 5. Конфигурация
-
-**Файл:** `assets/.env.example`
-```env
-SBER_CLIENT_ID=your_sber_client_id_here
-SBER_SCOPE=GIGACHAT_API_PERS
-SBER_AUTH_KEY=your_sber_auth_key_here
-```
+| Файл | Изменения |
+|------|-----------|
+| `lib/features/auth/data/sber_auth_service.dart` | `initialize()` читает `SBER_CLIENT_ID` из `.env`, MethodChannel + EventChannel |
+| `lib/features/auth/data/sber_id_auth_gateway_impl.dart` | Stream-based API с `Completer`, обработка success/error/cancel |
+| `lib/features/auth/presentation/.../sber_id_native_sign_in_button.dart` | UI-кнопка с подпиской на stream |
+| `lib/features/auth/di/.../appwrite_auth_backend_assembly_strategy.dart` | Создание и инициализация `SberAuthService` |
+| `lib/features/auth/domain/gateways/i_sber_id_gateway.dart` | Добавлен `dispose()` |
+| `lib/features/profile/data/noop_sber_id_gateway_impl.dart` | Добавлен `dispose()` |
+| `assets/flutter_i18n/ru.json` | Добавлено `auth.userCancelled` |
+| `assets/flutter_i18n/en.json` | Добавлено `auth.userCancelled` |
 
 ---
 
-## Что осталось сделать
+## 4. Native-часть
 
-### 1. Настройка нативного кода (Android/iOS)
+### Android (MainActivity.kt)
 
-#### Android (`android/app/src/main/kotlin/.../MainActivity.kt`)
-
+**Импорты SDK:**
 ```kotlin
-import ru.sber.id.SberId
-import ru.sber.id.SberIdAuthResult
-import io.flutter.plugin.common.MethodChannel
-
-class MainActivity: FlutterActivity() {
-    private val CHANNEL = "sber_id_auth"
-    private lateinit var sberId: SberId
-
-    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
-
-        // Инициализация SDK
-        sberId = SberId.Builder()
-            .setClientId(BuildConfig.SBER_CLIENT_ID)
-            .build()
-
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
-            .setMethodCallHandler { call, result ->
-                when (call.method) {
-                    "loginWithSber" -> loginWithSber(result)
-                    "isAvailable" -> result.success(true)
-                    else -> result.notImplemented()
-                }
-            }
-    }
-
-    private fun loginWithSber(result: MethodChannel.Result) {
-        sberId.login(this, object : SberIdAuthResult {
-            override fun onSuccess(token: String) {
-                runOnUiThread { result.success(token) }
-            }
-            override fun onError(error: String) {
-                runOnUiThread { 
-                    result.error("SBER_ID_ERROR", error, null) 
-                }
-            }
-            override fun onCancel() {
-                runOnUiThread { 
-                    result.error("SBER_ID_CANCELLED", "User cancelled", null) 
-                }
-            }
-        })
-    }
-}
+import ru.sberid.SberId
+import ru.sberid.SberIdError
+import ru.sberid.SberIdLoginCallback
 ```
 
-**Зависимость (`android/app/build.gradle.kts`):**
+**Инициализация:**
 ```kotlin
-dependencies {
-    implementation("ru.sber.id:sdk:1.0.0") // Уточните версию в документации
-}
+SberId.init(
+    context = this,
+    clientId = clientId,
+    scope = scope,
+    state = "rooster_sber_state"
+)
 ```
 
-#### iOS (`ios/Runner/AppDelegate.swift`)
+**Авторизация:**
+```kotlin
+SberId.login(this, object : SberIdLoginCallback {
+    override fun onSuccess(code: String) {
+        // Authorization code для обмена на токен
+    }
+    
+    override fun onError(error: SberIdError) {
+        // Обработка ошибки
+    }
+    
+    override fun onCancel() {
+        // Пользователь отменил вход
+    }
+})
+```
 
+**Каналы:**
+- `MethodChannel` (`com.rooster.app/sber_auth`) — `initSberSdk`, `startLogin`, `isAvailable`
+- `EventChannel` (`com.rooster.app/sber_auth/auth_events`) — `onSberAuthSuccess`, `onSberAuthError`
+
+### iOS (AppDelegate.swift)
+
+**Импорты SDK:**
 ```swift
 import SberId
+```
 
-@UIApplicationMain
-@objc class AppDelegate: FlutterAppDelegate {
-    private var sberId: SberId?
-    private var pendingResult: FlutterResult?
+**Инициализация:**
+```swift
+SberId.configure(
+    clientId: clientId,
+    scope: scope,
+    state: "rooster_sber_state"
+)
+```
 
-    override func application(
-        _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-    ) -> Bool {
-        sberId = SberId(clientId: ProcessInfo.processInfo.environment["SBER_CLIENT_ID"] ?? "")
-
-        let controller = window?.rootViewController as! FlutterViewController
-        let channel = FlutterMethodChannel(
-            name: "sber_id_auth",
-            binaryMessenger: controller.binaryMessenger
-        )
-
-        channel.setMethodCallHandler { [weak self] call, result in
-            if call.method == "loginWithSber" {
-                self?.loginWithSber(result: result)
-            } else if call.method == "isAvailable" {
-                result(true)
-            } else {
-                result(FlutterMethodNotImplemented)
-            }
-        }
-
-        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-    }
-
-    private func loginWithSber(result: @escaping FlutterResult) {
-        pendingResult = result
-        sberId?.login(from: self.window?.rootViewController ?? UIViewController()) { authResult in
-            DispatchQueue.main.async {
-                switch authResult {
-                case .success(let token):
-                    self.pendingResult?(token)
-                case .failure(let error):
-                    self.pendingResult?(FlutterError(
-                        code: "SBER_ID_ERROR",
-                        message: error.localizedDescription,
-                        details: nil
-                    ))
-                case .cancelled:
-                    self.pendingResult?(FlutterError(
-                        code: "SBER_ID_CANCELLED",
-                        message: "User cancelled",
-                        details: nil
-                    ))
-                }
-                self.pendingResult = nil
-            }
-        }
+**Авторизация:**
+```swift
+SberId.login(from: viewController) { authResult in
+    switch authResult {
+    case .success(let code):
+        // Authorization code
+    case .failure(let error):
+        // Ошибка
+    case .cancelled:
+        // Отмена
     }
 }
 ```
 
-**Зависимость (`ios/Podfile`):**
-```ruby
-pod 'SberId', '~> 1.0.0' // Уточните версию в документации
-```
+**URL Handling:**
+- `application(_:open:options:)` — для iOS < 13
+- `application(_:continue:restorationHandler:)` — для iOS 13+ (Universal Links)
 
-### 2. Интеграция с бэкендом
+---
 
-В файле `lib/features/auth/data/sber_id_auth_gateway_impl.dart`:
+## 5. Flutter-часть
 
-```dart
-// TODO: Заменить mock-данные на реальный вызов API
-final response = await _httpClient.post(
-  'https://your-backend.com/api/auth/sber/validate',
-  data: {'access_token': token},
-);
-final userData = SberIdUserEntity.fromJson(response.data);
-return userData;
-```
-
-### 3. Регистрация в DI-контейнере
-
-Добавить регистрацию в модуль авторизации:
+### SberAuthService
 
 ```dart
-// В вашем DI-модуле
-factoryParam<AppScope, ISberIdGateway, SberIdAuthGatewayImpl>(
-  (param, _) => SberIdAuthGatewayImpl(
-    sberAuthService: param.read<SberAuthService>(),
-  ),
-);
+class SberAuthService {
+  static const MethodChannel _channel = MethodChannel('com.rooster.app/sber_auth');
+  
+  // Инициализация — передаёт CLIENT_ID из .env в нативную часть
+  Future<void> initialize() async {
+    final clientId = dotenv.env['SBER_CLIENT_ID'] ?? '';
+    await _channel.invokeMethod('initSberSdk', {
+      'clientId': clientId,
+      'scope': 'openid profile',
+    });
+  }
+  
+  // Запуск OAuth-флоу
+  Future<bool> startLogin() async;
+  
+  // Stream результатов авторизации
+  Stream<SberAuthResult> get authStream;
+}
+
+// Результаты
+sealed class SberAuthResult {}
+class SberAuthSuccess extends SberAuthResult { final String code; }
+class SberAuthFailure extends SberAuthResult { final String error, message; }
 ```
 
-### 4. Добавление кнопки на экран авторизации
-
-В файл `lib/features/auth/presentation/screens/auth/widgets/mobile/auth_mobile_content.dart`:
+### SberIdAuthGatewayImpl
 
 ```dart
-SberIdSignInButton(
-  gateway: sberIdGateway,
-  onSignInSuccess: () {
-    // Навигация на главный экран
-  },
-),
+Future<SberIdUserEntity?> signInWithSberId() async {
+  final completer = Completer<SberIdUserEntity?>();
+  
+  _authSubscription = _sberAuthService.authStream.listen((result) {
+    switch (result) {
+      case SberAuthSuccess(:final code):
+        // TODO: Обменять code на токен на бэкенде
+        final user = SberIdUserEntity(
+          id: 'sber_user_${DateTime.now().millisecondsSinceEpoch}',
+          accessToken: code,
+        );
+        completer.complete(user);
+        
+      case SberAuthFailure(:final error):
+        completer.complete(null);
+    }
+  });
+  
+  await _sberAuthService.startLogin();
+  return await completer.future.timeout(Duration(minutes: 5));
+}
 ```
 
 ---
 
-## Тестирование
+## 6. Настройка Client ID
+
+`SBER_CLIENT_ID` уже есть в `.env`:
+```env
+SBER_CLIENT_ID=01a05801-7661-7b6a-b4cc-4c03a5628942
+```
+
+### Android
+
+Читается из `local.properties`:
+```properties
+sber.client.id=01a05801-7661-7b6a-b4cc-4c03a5628942
+```
+
+Или передаётся через MethodChannel из Flutter (`SberAuthService.initialize()`).
+
+### iOS
+
+Файл: `ios/Runner/Info.plist`
+```xml
+<key>SberClientId</key>
+<string>01a05801-7661-7b6a-b4cc-4c03a5628942</string>
+```
+
+### Redirect URI
+
+Зарегистрируйте в [developer.sber.ru](https://developer.sber.ru/):
+```
+rooster-auth://sber-id
+```
+
+---
+
+## 7. Тестирование
 
 ### Сценарии
 
 | Сценарий | Ожидаемый результат |
 |----------|---------------------|
-| Вход через Сбера (установлено) | Открывается приложение Сбера → биометрия → успех |
+| Вход через Сбера (установлено) | Открывается нативное приложение → биометрия → успех |
 | Вход без Сбера (не установлено) | Открывается браузер → веб-авторизация → успех |
-| Отмена авторизации | Возврат на экран авторизации, SnackBar с ошибкой |
+| Отмена авторизации | Возврат на экран авторизации, сообщение "Вход отменён" |
 | Нет сети | Ошибка с предложением повторить |
 
-### Команды
+### Проверка нативных частей
 
+**Android:**
 ```bash
-# Очистка и сборка
-flutter clean
-flutter pub get
+# Проверка intent-filter
+adb shell dumpsys package | grep -A 5 "rooster-auth"
+```
 
-# Android
-cd android && ./gradlew clean && cd ..
-flutter run --flavor dev
-
-# iOS
-cd ios && pod install && cd ..
-flutter run --flavor dev
+**iOS:**
+```bash
+# Проверка URL schemes
+plutil -p ios/Runner/Info.plist | grep -A 5 "CFBundleURLTypes"
 ```
 
 ---
 
-## Сравнение подходов
+## 8. Ссылки
 
-| Характеристика | OAuth2 (Appwrite) | Нативный SDK |
-|----------------|-------------------|--------------|
-| UX | Переход в браузер | Нативное приложение Сбера |
-| Скорость | Медленнее | Быстрее |
-| Биометрия | ❌ Нет | ✅ Да (Face ID / Touch ID) |
-| Fallback | — | ✅ Автоматически в браузер |
-| Сложность | Ниже | Выше (нативный код) |
-| Зависимости | Только Flutter | Flutter + нативные SDK |
-
-**Рекомендация:** Использовать нативный SDK как основной, с fallback на OAuth2.
-
----
-
-## Ссылки
-
-- [Документация Sber ID](https://develop.sber.ru/docs/)
-- [Sber Developer Portal](https://developer.sber.ru/)
+- [Android SDK Documentation](https://developers.sber.ru/docs/ru/sberid/sdk/androidsdk/connection)
+- [iOS SDK Documentation](https://developers.sber.ru/docs/ru/sberid/sdk/iossdk/connection)
+- [Developer Portal](https://developer.sber.ru/)
 - [Flutter MethodChannel](https://docs.flutter.dev/development/platform-integration/platform-channels)
-- [Исходный документ](SBER_ID_NATIVE_SDK_INTEGRATION.md)
+- [OAuth 2.0 RFC 6749](https://tools.ietf.org/html/rfc6749)

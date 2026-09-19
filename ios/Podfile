@@ -34,6 +34,10 @@ target 'Runner' do
   target 'RunnerTests' do
     inherit! :search_paths
   end
+
+  # Sber ID SDK — нативный SDK для App-to-App авторизации (SberID).
+  // Документация: https://developers.sber.ru/docs/ru/sberid/sdk/iossdk/connection
+  pod 'SberId', '~> 2.0.0'
 end
 
 post_install do |installer|

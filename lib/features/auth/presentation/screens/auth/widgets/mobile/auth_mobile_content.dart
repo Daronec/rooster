@@ -63,8 +63,7 @@ class AuthMobileContent extends StatelessWidget {
             ],
             // Кнопка Sber ID (всегда показывается для тестирования)
             SberIdSignInButton(
-              gateway: wm.sberIdGateway,
-              onSignInSuccess: wm.onSberIdSignInSuccess,
+              gateway: wm.authGateway,
             ),
             const Height(AppSizes.double8),
           ],
