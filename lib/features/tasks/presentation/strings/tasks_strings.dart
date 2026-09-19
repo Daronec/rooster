@@ -70,6 +70,12 @@ final class TasksStrings {
   static String screenTitle(BuildContext context) =>
       FlutterI18n.translate(context, 'tasks.screenTitle');
 
+  static String loadingAppBarTitle(BuildContext context) =>
+      FlutterI18n.translate(context, 'tasks.loadingAppBarTitle');
+
+  static String errorAppBarTitle(BuildContext context) =>
+      FlutterI18n.translate(context, 'tasks.errorAppBarTitle');
+
   static String emptyState(BuildContext context) =>
       FlutterI18n.translate(context, 'tasks.emptyState');
 

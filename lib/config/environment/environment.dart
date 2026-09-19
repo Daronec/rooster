@@ -5,9 +5,9 @@ import 'package:rooster/config/environment/build_type.dart';
 /// Only static configurations that are known at compile time are allowed here.
 /// {@endtemplate}
 class Environment {
-
   /// {@macro environment.class}
   const Environment({required this.buildType});
+
   /// Build type.
   final BuildType buildType;
 

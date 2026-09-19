@@ -10,56 +10,64 @@ final class LlmNativeBindings {
     // iOS: libllm_bridge.dylib
     _llmInit = library
         .lookup<
-        ffi.NativeFunction<
-            ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Char>)>>(
-        'llm_init')
+          ffi.NativeFunction<
+            ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Char>)
+          >
+        >('llm_init')
         .asFunction<ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Char>)>();
 
     _llmGenerate = library
         .lookup<
-        ffi.NativeFunction<
+          ffi.NativeFunction<
             ffi.Int32 Function(
-                ffi.Pointer<ffi.Void>,
-                ffi.Pointer<ffi.Char>,
-                ffi.Int32,
-                ffi.Double,
-                ffi.Pointer<ffi.Pointer<ffi.Char>>,
-                )
-        >>('llm_generate')
-        .asFunction<int Function(
-        ffi.Pointer<ffi.Void>,
-        ffi.Pointer<ffi.Char>,
-        int,
-        double,
-        ffi.Pointer<ffi.Pointer<ffi.Char>>,
-        )>();
+              ffi.Pointer<ffi.Void>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Int32,
+              ffi.Double,
+              ffi.Pointer<ffi.Pointer<ffi.Char>>,
+            )
+          >
+        >('llm_generate')
+        .asFunction<
+          int Function(
+            ffi.Pointer<ffi.Void>,
+            ffi.Pointer<ffi.Char>,
+            int,
+            double,
+            ffi.Pointer<ffi.Pointer<ffi.Char>>,
+          )
+        >();
 
     _llmFree = library
         .lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'llm_free')
+          'llm_free',
+        )
         .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
     _llmFreeResult = library
         .lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Char>)>>(
-        'llm_free_result')
+          'llm_free_result',
+        )
         .asFunction<void Function(ffi.Pointer<ffi.Char>)>();
 
     _llmGetInfo = library
         .lookup<
-        ffi.NativeFunction<
-            ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>)>>(
-        'llm_get_info')
+          ffi.NativeFunction<
+            ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>)
+          >
+        >('llm_get_info')
         .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>)>();
   }
 
   late final ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Char>) _llmInit;
   late final int Function(
-      ffi.Pointer<ffi.Void>,
-      ffi.Pointer<ffi.Char>,
-      int,
-      double,
-      ffi.Pointer<ffi.Pointer<ffi.Char>>,
-      ) _llmGenerate;
+    ffi.Pointer<ffi.Void>,
+    ffi.Pointer<ffi.Char>,
+    int,
+    double,
+    ffi.Pointer<ffi.Pointer<ffi.Char>>,
+  )
+  _llmGenerate;
   late final void Function(ffi.Pointer<ffi.Void>) _llmFree;
   late final void Function(ffi.Pointer<ffi.Char>) _llmFreeResult;
   late final ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>) _llmGetInfo;
@@ -76,11 +84,12 @@ final class LlmNativeBindings {
   }
 
   /// Генерация ответа.
-  Future<String?> generate(ffi.Pointer<ffi.Void> handle,
-      String prompt, {
-        int maxTokens = 256,
-        double temperature = 0.7,
-      }) async {
+  Future<String?> generate(
+    ffi.Pointer<ffi.Void> handle,
+    String prompt, {
+    int maxTokens = 256,
+    double temperature = 0.7,
+  }) async {
     final resultPtr = calloc<ffi.Pointer<ffi.Char>>();
     final promptPointer = prompt.toNativeUtf8().cast<ffi.Char>();
     try {

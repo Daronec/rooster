@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rooster/features/dev_panel/presentation/screens/dev_panel/dev_panel_wm.dart';
+import 'package:rooster/features/dev_panel/presentation/strings/dev_panel_strings.dart';
 import 'package:rooster/uikit/layout_helpers/height.dart';
 import 'package:rooster/uikit/scaffold/app_scaffold.dart';
 import 'package:rooster/uikit/scaffold/default_app_bar.dart';
@@ -25,7 +26,7 @@ class DevPanelDesktopContent extends StatelessWidget {
       builder: (context, _) {
         return AppScaffold(
           appBar: DefaultAppBar(
-            title: const Text('Dev / Sync'),
+            title: Text(DevPanelStrings.screenTitle(context)),
             actions: <Widget>[
               IconButton(
                 onPressed: wm.refresh,
@@ -36,23 +37,23 @@ class DevPanelDesktopContent extends StatelessWidget {
           body: ListView(
             padding: AppSizes.edgeInsetsAll16,
             children: <Widget>[
-              Text('Статус: ${wm.syncStatus}'),
-              Text('Сеть (индикатор): ${wm.online.value ?? '…'}'),
+              Text('${DevPanelStrings.syncStatusLabel(context)} ${wm.syncStatus}'),
+              Text('${DevPanelStrings.networkIndicatorLabel(context)} ${wm.online.value ?? '…'}'),
               ValueListenableBuilder<bool>(
                 valueListenable: wm.outboundPaused,
                 builder: (context, paused, __) {
                   return SwitchListTile(
-                    title: const Text('Пауза исходящего sync'),
-                    subtitle: const Text('Очередь копится локально'),
+                    title: Text(DevPanelStrings.syncPausedLabel(context)),
+                    subtitle: Text(DevPanelStrings.syncQueueAccumulatingLabel(context)),
                     value: paused,
                     onChanged: wm.setSyncPaused,
                   );
                 },
               ),
               const Height(AppSizes.double16),
-              const Text(
-                'Очередь:',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                DevPanelStrings.queueLabel(context),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               ...wm.queueLines.value.map(Text.new),
             ],

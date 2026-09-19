@@ -22,8 +22,7 @@ final class SyncBackoff {
 
   /// Задержка перед попыткой номер [attempt] (1-based).
   Duration delayForAttempt(int attempt) {
-    final exp =
-        math.pow(multiplier, math.max(0, attempt - 1)).toDouble();
+    final exp = math.pow(multiplier, math.max(0, attempt - 1)).toDouble();
     final rawMs = (base.inMilliseconds * exp).round();
     final capped = math.min(rawMs, max.inMilliseconds);
     final jitter = _random.nextDouble() * 0.25 * capped;

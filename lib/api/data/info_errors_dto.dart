@@ -10,7 +10,6 @@ part 'info_errors_dto.g.dart';
 
 @JsonSerializable(includeIfNull: false)
 class InfoErrorsDto {
-
   const InfoErrorsDto({this.field, this.message});
 
   factory InfoErrorsDto.fromJson(Map<String, dynamic> json) =>

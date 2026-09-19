@@ -13,9 +13,9 @@ typedef OperationWrapper<T, E extends Failure> = Future<T> Function();
 
 /// Базовый класс для всех репозиториев.
 abstract class BaseRepository extends DisposableObject {
-
   /// Base repository constructor.
   BaseRepository({required this.logWriter});
+
   /// Logger.
   final ILogWriter logWriter;
 

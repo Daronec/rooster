@@ -21,9 +21,9 @@ abstract base class Converter<TResult, TFrom> {
 /// Base class for converters that convert to and from a type.
 /// {@endtemplate}
 abstract base class ConverterToAndFrom<TResult, TFrom> {
-
   /// {@macro converter.class}
   const ConverterToAndFrom();
+
   /// TResult from TFrom converter.
   Converter<TResult, TFrom> get converter;
 

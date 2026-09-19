@@ -9,7 +9,6 @@ part 'device_information_dto.g.dart';
 
 @JsonSerializable(includeIfNull: false)
 class DeviceInformationDto {
-
   const DeviceInformationDto({required this.device, this.os, this.osVersion});
 
   factory DeviceInformationDto.fromJson(Map<String, dynamic> json) =>

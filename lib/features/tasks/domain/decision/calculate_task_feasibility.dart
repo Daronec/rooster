@@ -93,9 +93,10 @@ final class CalculateTaskFeasibility {
     };
     var satisfied = 0;
     for (final row in requirements) {
+      final stockItemId = row.stockItemId;
       final resolvedStockId =
-          (row.stockItemId != null && row.stockItemId!.trim().isNotEmpty)
-              ? row.stockItemId!.trim()
+          (stockItemId?.trim().isNotEmpty ?? false)
+              ? stockItemId!.trim()
               : byNormalizedNameToId[row.name.trim().toLowerCase()];
       if (resolvedStockId == null || resolvedStockId.isEmpty) {
         continue;

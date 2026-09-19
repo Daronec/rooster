@@ -1,6 +1,7 @@
 import 'package:rooster/core/sync/i_sync_manager.dart';
 import 'package:rooster/core/sync/i_sync_remote_executor.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
+import 'package:rooster/features/auth/domain/gateways/i_sber_id_gateway.dart';
 import 'package:rooster/features/profile/domain/gateways/i_profile_avatar_gateway.dart';
 import 'package:rooster/features/profile/domain/gateways/i_profile_personal_data_gateway.dart';
 import 'package:rooster/features/profile/domain/gateways/i_teams_gateway.dart';
@@ -16,6 +17,7 @@ final class AuthBackendAssemblyResult {
     required this.profilePersonalDataGateway,
     required this.profileAvatarGateway,
     required this.teamsGateway,
+    required this.sberIdGateway,
     this.bindInboundCloudSync,
   });
 
@@ -34,7 +36,13 @@ final class AuthBackendAssemblyResult {
   /// Команды Appwrite; при офлайне — реализация без сетевых вызовов.
   final ITeamsGateway teamsGateway;
 
+  /// Шлюз входа через Sber ID.
+  final ISberIdGateway sberIdGateway;
+
   /// Входящая синхронизация (pull) после привязки [ISyncManager]; только ветка Appwrite с Databases.
-  final void Function(ISyncManager syncManager, IConnectivityGateway connectivity)?
-      bindInboundCloudSync;
+  final void Function(
+    ISyncManager syncManager,
+    IConnectivityGateway connectivity,
+  )?
+  bindInboundCloudSync;
 }

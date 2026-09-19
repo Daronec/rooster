@@ -13,8 +13,9 @@ final class LlmLibraryLoader {
         // Проверяем, что библиотека содержит нужные функции
         try {
           lib.lookupFunction<
-              ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Char>),
-              ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Char>)>('llm_init');
+            ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Char>),
+            ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Char>)
+          >('llm_init');
         } on ffi.ArgumentError {
           throw Exception(
             'Native library loaded but llm_init function not found. '

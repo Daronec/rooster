@@ -32,9 +32,9 @@ abstract interface class ISnackQueueWM
 /// {@endtemplate}
 final class SnackQueueWM extends WidgetModel<SnackQueueWidget, EmptyModel>
     implements ISnackQueueWM {
-
   /// {@macro snack_provider_wm.class}
   SnackQueueWM(super._model, this._router, this._snackController);
+
   /// Controller for displaying dialogs.
   final DefaultSnackController _snackController;
 

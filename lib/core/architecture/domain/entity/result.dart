@@ -53,9 +53,9 @@ sealed class Result<TData, TErr extends Failure> {
 
 /// {@macro result.class}
 final class ResultOk<TData, TErr extends Failure> extends Result<TData, TErr> {
-
   /// {@macro result.class}
   const ResultOk(this.data);
+
   /// Successful Result data.
   final TData data;
 }
@@ -63,9 +63,9 @@ final class ResultOk<TData, TErr extends Failure> extends Result<TData, TErr> {
 /// {@macro result.class}
 final class ResultFailed<TData, TErr extends Failure>
     extends Result<TData, TErr> {
-
   /// {@macro result.class}
   const ResultFailed(this.failure);
+
   /// Failed Result error.
   final TErr failure;
 }

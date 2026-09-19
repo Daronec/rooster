@@ -84,7 +84,6 @@ class App extends StatelessWidget {
 
 /// Scroll behavior without thumb.
 class NoThumbScrollBehavior extends ScrollBehavior {
-
   /// Scroll behavior without thumb.
   const NoThumbScrollBehavior();
   @override

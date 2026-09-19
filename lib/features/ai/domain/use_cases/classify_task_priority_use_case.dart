@@ -11,12 +11,14 @@ final class ClassifyTaskPriorityUseCase {
   ///
   /// Возвращает: 'high', 'medium', 'low' или null в случае ошибки.
   Future<String?> call(String taskDescription) async {
-    if (llmGateway == null || !llmGateway!.isInitialized) {
+    final gateway = llmGateway;
+    if (gateway == null || !gateway.isInitialized) {
       return null;
     }
 
     try {
-      final prompt = '''Ты — помощник по управлению задачами.
+      final prompt =
+          '''Ты — помощник по управлению задачами.
 Определи приоритет задачи на основе её описания.
 Ответь одним словом: high, medium или low.
 
@@ -24,7 +26,7 @@ final class ClassifyTaskPriorityUseCase {
 
 Приоритет:''';
 
-      final response = await llmGateway!.generate(
+      final response = await gateway.generate(
         prompt: prompt,
         maxTokens: 10,
         temperature: 0.3,

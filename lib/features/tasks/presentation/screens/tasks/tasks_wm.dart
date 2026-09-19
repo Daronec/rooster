@@ -16,6 +16,7 @@ import 'package:rooster/features/tasks/presentation/screens/tasks/tasks_model.da
 import 'package:rooster/features/tasks/presentation/screens/tasks/tasks_screen.dart';
 import 'package:rooster/features/tasks/presentation/sounds/i_task_completion_sound_player.dart';
 import 'package:rooster/features/tasks/presentation/strings/tasks_strings.dart';
+import 'package:rooster/uikit/buttons/app_black_button.dart';
 import 'package:rooster/util/app_typedefs.dart';
 import 'package:rooster/util/union_state/empty_screen_body.dart';
 
@@ -203,7 +204,7 @@ class TasksScreenWidgetModel
           title: Text(TasksStrings.deleteConfirmTitle(context)),
           content: Text(TasksStrings.deleteConfirmMessage(context)),
           actions: <Widget>[
-            TextButton(
+            AppBlackButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
               child: Text(TasksStrings.deleteCancel(context)),
             ),

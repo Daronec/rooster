@@ -24,8 +24,8 @@ class TaskListsDesktopFailure extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      appBar: const DefaultAppBar(
-        title: Text('Списки'),
+      appBar: DefaultAppBar(
+        title: Text(TaskListsStrings.errorAppBarTitle(context)),
         withBackButton: false,
       ),
       body: Padding(

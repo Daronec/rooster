@@ -18,6 +18,7 @@ import 'package:rooster/features/profile/domain/entities/profile_team_member_ent
 import 'package:rooster/features/profile/presentation/screens/profile/profile_model.dart';
 import 'package:rooster/features/profile/presentation/screens/profile/profile_screen.dart';
 import 'package:rooster/features/profile/presentation/strings/profile_strings.dart';
+import 'package:rooster/uikit/buttons/app_black_button.dart';
 import 'package:rooster/uikit/layout_helpers/height.dart';
 import 'package:rooster/uikit/sizes/app_sizes.dart';
 import 'package:rooster/util/union_state/empty_screen_body.dart';
@@ -154,7 +155,7 @@ class ProfileScreenWidgetModel
             maxLength: 128,
           ),
           actions: <Widget>[
-            TextButton(
+            AppBlackButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
               child: Text(
                 ProfileStrings.editPersonalNamesCancel(dialogContext),
@@ -344,7 +345,7 @@ class ProfileScreenWidgetModel
               textCapitalization: TextCapitalization.sentences,
             ),
             actions: <Widget>[
-              TextButton(
+              AppBlackButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
                 child: Text(
                   ProfileStrings.teamsDialogCancel(dialogContext),
@@ -484,7 +485,7 @@ class ProfileScreenWidgetModel
                   ),
                 ),
                 actions: <Widget>[
-                  TextButton(
+                  AppBlackButton(
                     onPressed: () => Navigator.of(dialogContext).pop(),
                     child: Text(
                       ProfileStrings.teamsDialogCancel(dialogContext),

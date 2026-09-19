@@ -265,6 +265,7 @@ final class AppScopeRegister {
       isLikelyHuaweiOrHonorAndroidForAuthUi:
           isLikelyHuaweiOrHonorAndroidForAuthUi,
       authGateway: authAssembly.authGateway,
+      sberIdGateway: authAssembly.sberIdGateway,
       profileAvatarGateway: authAssembly.profileAvatarGateway,
       profilePersonalDataGateway: authAssembly.profilePersonalDataGateway,
       teamsGateway: authAssembly.teamsGateway,

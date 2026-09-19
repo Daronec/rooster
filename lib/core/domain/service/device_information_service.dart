@@ -9,7 +9,6 @@ import 'package:rooster/core/domain/entities/device_information/device_type.dart
 
 /// {@macro device_information_service}
 class DeviceInformationService implements IDeviceInformationService {
-
   /// {@macro device_information_service}
   const DeviceInformationService(this._deviceInfo);
   final DeviceInfoPlugin _deviceInfo;

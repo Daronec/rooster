@@ -8,13 +8,13 @@ part 'constants_dto.g.dart';
 /// {@endtemplate}
 @JsonSerializable(includeIfNull: false)
 class ConstantsDto {
-
   /// {@macro ConstantsDto}
   const ConstantsDto({this.supportLink});
 
   /// Factory from JSON.
   factory ConstantsDto.fromJson(Map<String, dynamic> json) =>
       _$ConstantsDtoFromJson(json);
+
   /// URL for support page or contact information.
   @JsonKey(name: 'support_link', readValue: DtoUtils.readString)
   final String? supportLink;

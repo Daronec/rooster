@@ -420,12 +420,9 @@ final class CreateTaskFormState extends ChangeNotifier {
     _isAllDay = input.isAllDay;
 
     if (input.isAllDay) {
-      if (input.dueDateOnly != null) {
-        _dueDate = DateTime(
-          input.dueDateOnly!.year,
-          input.dueDateOnly!.month,
-          input.dueDateOnly!.day,
-        );
+      final dueDate = input.dueDateOnly;
+      if (dueDate != null) {
+        _dueDate = DateTime(dueDate.year, dueDate.month, dueDate.day);
       }
     } else {
       final start = input.startAt;

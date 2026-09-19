@@ -26,7 +26,7 @@ class PlanningDesktopContent extends StatelessWidget {
       builder: (context, plans, _) {
         return AppScaffold(
           body: Padding(
-            padding: const EdgeInsets.all(AppSizes.double24),
+            padding: AppSizes.edgeInsetsAll24,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[

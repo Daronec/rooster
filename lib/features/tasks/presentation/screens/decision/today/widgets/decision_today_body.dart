@@ -40,7 +40,7 @@ class DecisionTodayBody extends StatelessWidget {
       unionStateListenable: bodyState,
       loadingBuilder: (context, last) => const Center(
         child: Padding(
-          padding: EdgeInsets.all(AppSizes.double24),
+          padding: AppSizes.edgeInsetsAll24,
           child: CircularProgressIndicator(),
         ),
       ),

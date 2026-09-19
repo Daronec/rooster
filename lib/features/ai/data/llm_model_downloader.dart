@@ -76,20 +76,24 @@ final class LlmModelDownloader {
       debugPrint('[LlmModelDownloader] Checking for existing model...');
       final existingPath = await getModelFilePath(modelName: modelName);
       debugPrint('[LlmModelDownloader] Existing path: $existingPath');
-      
+
       final fileExists = io.File(existingPath).existsSync();
       debugPrint('[LlmModelDownloader] File exists: $fileExists');
-      
+
       if (!forceRedownload && fileExists) {
-        debugPrint('[LlmModelDownloader] Model already exists, returning cached path');
+        debugPrint(
+          '[LlmModelDownloader] Model already exists, returning cached path',
+        );
         return DownloadResult.success(existingPath);
       }
 
       // Get documents directory
-      debugPrint('[LlmModelDownloader] Getting application documents directory...');
+      debugPrint(
+        '[LlmModelDownloader] Getting application documents directory...',
+      );
       final directory = await getApplicationDocumentsDirectory();
       debugPrint('[LlmModelDownloader] Documents directory: ${directory.path}');
-      
+
       final modelDir = io.Directory('${directory.path}/models');
 
       // Create models directory if it doesn't exist
@@ -100,7 +104,7 @@ final class LlmModelDownloader {
 
       final modelPath = '${modelDir.path}/$modelName';
       debugPrint('[LlmModelDownloader] Model path: $modelPath');
-      
+
       final file = io.File(modelPath);
       final fileStream = file.openWrite();
 
@@ -108,12 +112,16 @@ final class LlmModelDownloader {
       debugPrint('[LlmModelDownloader] Sending HTTP request...');
       final request = http.Request('GET', Uri.parse(modelUrl));
       final response = await request.send();
-      debugPrint('[LlmModelDownloader] Response status: ${response.statusCode}');
+      debugPrint(
+        '[LlmModelDownloader] Response status: ${response.statusCode}',
+      );
 
       if (response.statusCode != 200) {
         await fileStream.close();
         await file.delete();
-        debugPrint('[LlmModelDownloader] Download failed with status ${response.statusCode}');
+        debugPrint(
+          '[LlmModelDownloader] Download failed with status ${response.statusCode}',
+        );
         return DownloadResult.failure(
           'Download failed with status ${response.statusCode}',
         );
@@ -122,7 +130,7 @@ final class LlmModelDownloader {
       // Get total size for progress calculation
       final bytesExpected = response.contentLength ?? -1;
       debugPrint('[LlmModelDownloader] Expected size: $bytesExpected bytes');
-      
+
       var bytesReceived = 0;
 
       // Stream the response body to file
@@ -141,7 +149,9 @@ final class LlmModelDownloader {
       });
 
       await fileStream.close();
-      debugPrint('[LlmModelDownloader] Download completed. Bytes received: $bytesReceived');
+      debugPrint(
+        '[LlmModelDownloader] Download completed. Bytes received: $bytesReceived',
+      );
 
       // Verify file was created
       if (!file.existsSync()) {
@@ -152,9 +162,11 @@ final class LlmModelDownloader {
       // Verify file size
       final actualSize = await file.length();
       debugPrint('[LlmModelDownloader] Actual file size: $actualSize bytes');
-      
+
       if (bytesExpected > 0 && actualSize < bytesExpected) {
-        debugPrint('[LlmModelDownloader] ERROR: Download incomplete. Expected: $bytesExpected, Got: $actualSize');
+        debugPrint(
+          '[LlmModelDownloader] ERROR: Download incomplete. Expected: $bytesExpected, Got: $actualSize',
+        );
         await file.delete();
         return DownloadResult.failure(
           'Download incomplete. Expected $bytesExpected bytes, got $actualSize bytes. Check your internet connection.',
@@ -166,18 +178,20 @@ final class LlmModelDownloader {
       final fileHandle = file.openSync(mode: FileMode.read);
       final magicBytes = fileHandle.readSync(4);
       fileHandle.closeSync();
-      
+
       final magicString = String.fromCharCodes(magicBytes);
       debugPrint('[LlmModelDownloader] Magic: $magicString');
-      
+
       if (magicString != 'GGUF') {
-        debugPrint('[LlmModelDownloader] ERROR: Invalid GGUF magic number: $magicString');
+        debugPrint(
+          '[LlmModelDownloader] ERROR: Invalid GGUF magic number: $magicString',
+        );
         await file.delete();
         return DownloadResult.failure(
           'Invalid file format. Expected GGUF file, got: $magicString. The downloaded file may be corrupted.',
         );
       }
-      
+
       debugPrint('[LlmModelDownloader] GGUF validation passed');
 
       final fileSize = await file.length();
