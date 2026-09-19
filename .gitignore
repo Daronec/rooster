@@ -1,37 +1,3 @@
-```
-# Flutter/Dart specific
-.dart_tool/
-.packages
-.pub-cache/
-pubspec.lock
+(docs/SBER_INTEGRATION_CHECKLIST.md is a documentation file, which is a source/config file, so it should not be ignored)
 
-# Build outputs
-build/
-*.apk
-*.aab
-*.ipa
-*.app
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Logs
-*.log
-*.tmp
-
-# Environment
-.env
-.env.local
-*.env.*
-
-# Dependencies
-node_modules/
-vendor/
-
-# OS generated files
-.DS_Store
-Thumbs.db
-```
+(empty)
