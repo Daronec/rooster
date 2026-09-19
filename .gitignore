@@ -1,3 +1,73 @@
-(docs/SBER_INTEGRATION_CHECKLIST.md is a documentation file, which is a source/config file, so it should not be ignored)
+```
+# Flutter/Dart
+.dart_tool/
+.build/
+packages/
+*.iws
+*.sw
+*.swo
+*.swp
+*~
+.DS_Store
+flutter_export_environment.sh
+ephemeral/
+generated_plugin_registrant.dart
 
-(empty)
+# Environment
+.env
+.env.local
+*.env.*
+
+# Logs
+*.log
+**/logs
+
+# Coverage
+coverage/
+
+# Temporary
+*.tmp
+*.temp
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+build/
+dist/
+
+# Python (if any Python components)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git/modules/
+.gitattributes
+.github/
+.dart_tool/
+.packages
+.pub/
+web/.build/
+web/build/
+```

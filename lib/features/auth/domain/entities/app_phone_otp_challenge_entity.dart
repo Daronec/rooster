@@ -1,4 +1,4 @@
-/// Результат запроса SMS-кода для входа по телефону (например Appwrite).
+/// Результат запроса SMS-кода для входа по телефону.
 final class AppPhoneOtpChallengeEntity {
   /// Создаёт значение.
   const AppPhoneOtpChallengeEntity({required this.userId});

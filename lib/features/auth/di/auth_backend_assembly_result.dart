@@ -18,7 +18,6 @@ final class AuthBackendAssemblyResult {
     required this.profileAvatarGateway,
     required this.teamsGateway,
     required this.sberIdGateway,
-    this.bindInboundCloudSync,
   });
 
   /// Шлюз входа и сессии.
@@ -33,16 +32,9 @@ final class AuthBackendAssemblyResult {
   /// Аватар профиля в облаке.
   final IProfileAvatarGateway profileAvatarGateway;
 
-  /// Команды Appwrite; при офлайне — реализация без сетевых вызовов.
+  /// Команды; при офлайне — реализация без сетевых вызовов.
   final ITeamsGateway teamsGateway;
 
   /// Шлюз входа через Sber ID.
   final ISberIdGateway sberIdGateway;
-
-  /// Входящая синхронизация (pull) после привязки [ISyncManager]; только ветка Appwrite с Databases.
-  final void Function(
-    ISyncManager syncManager,
-    IConnectivityGateway connectivity,
-  )?
-  bindInboundCloudSync;
 }

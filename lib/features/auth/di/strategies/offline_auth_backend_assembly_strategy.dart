@@ -20,12 +20,12 @@ final class OfflineAuthBackendAssemblyStrategy
   Future<AuthBackendAssemblyResult?> tryAssemble(
     AuthBackendAssemblyContext context,
   ) async {
-    if (context.authBackendStrategy == AuthBackendStrategy.appwrite) {
+    if (context.authBackendStrategy == AuthBackendStrategy.cloud) {
       return null;
     }
     final authGateway = OfflineAuthGateway(
       context.logger,
-      unavailableReason: CloudAuthUnavailableReason.appwriteNotConfigured,
+      unavailableReason: CloudAuthUnavailableReason.cloudNotConfiguredInEnv,
     );
     return AuthBackendAssemblyResult(
       authGateway: authGateway,

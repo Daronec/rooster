@@ -18,11 +18,11 @@ enum CloudAuthUnavailableReason {
   /// Вход через HUAWEI ID на ветке Firebase не используется (Huawei — отдельный бэкенд без Firebase).
   huaweiSignInUnavailableOnFirebaseBackend,
 
-  /// Вход через HUAWEI ID в текущем режиме авторизации не предусмотрен (например Appwrite).
+  /// Вход через HUAWEI ID в текущем режиме авторизации не предусмотрен.
   huaweiSignInUnavailable,
 
-  /// В `.env` не заданы параметры клиента Appwrite.
-  appwriteNotConfigured,
+  /// В `.env` не заданы параметры Cloud.ru / Sber ID.
+  cloudNotConfiguredInEnv,
 
   /// Анонимный вход в продукте не используется.
   anonymousAuthNotSupported,
