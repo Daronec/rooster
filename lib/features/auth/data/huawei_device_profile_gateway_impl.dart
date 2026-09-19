@@ -4,10 +4,11 @@ import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
 import 'package:rooster/features/auth/domain/gateways/i_huawei_device_profile_gateway.dart';
 
 /// [IHuaweiDeviceProfileGateway] на основе [DeviceInfoPlugin] (Android).
-final class HuaweiDeviceProfileGatewayImpl implements IHuaweiDeviceProfileGateway {
+final class HuaweiDeviceProfileGatewayImpl
+    implements IHuaweiDeviceProfileGateway {
   /// Создаёт шлюз.
   HuaweiDeviceProfileGatewayImpl({DeviceInfoPlugin? deviceInfo})
-      : _deviceInfo = deviceInfo ?? DeviceInfoPlugin();
+    : _deviceInfo = deviceInfo ?? DeviceInfoPlugin();
 
   final DeviceInfoPlugin _deviceInfo;
 
@@ -23,7 +24,8 @@ final class HuaweiDeviceProfileGatewayImpl implements IHuaweiDeviceProfileGatewa
     final manufacturer = android.manufacturer.toLowerCase();
     final brand = android.brand.toLowerCase();
     final model = android.model.toLowerCase();
-    final isHuaweiFamily = manufacturer.contains('huawei') ||
+    final isHuaweiFamily =
+        manufacturer.contains('huawei') ||
         manufacturer.contains('honor') ||
         brand.contains('huawei') ||
         brand.contains('honor') ||

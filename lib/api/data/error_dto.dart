@@ -8,7 +8,6 @@ part 'error_dto.g.dart';
 
 @JsonSerializable(includeIfNull: false)
 class ErrorDto {
-
   const ErrorDto({required this.code, required this.description});
 
   factory ErrorDto.fromJson(Map<String, dynamic> json) =>

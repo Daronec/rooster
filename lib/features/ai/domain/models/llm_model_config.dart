@@ -67,9 +67,8 @@ final class LlmModelConfig {
   ];
 
   /// Модель по умолчанию.
-  static LlmModelConfig get defaultModel =>
-      availableModels.firstWhere(
-        (m) => m.isDefault,
-        orElse: () => availableModels.first,
-      );
+  static LlmModelConfig get defaultModel => availableModels.firstWhere(
+    (m) => m.isDefault,
+    orElse: () => availableModels.first,
+  );
 }

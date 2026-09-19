@@ -312,6 +312,27 @@ abstract class AppSizes {
   /// Edge insets all 16.
   static const edgeInsetsAll16 = EdgeInsets.all(double16);
 
+  /// Edge insets all 12.
+  static const edgeInsetsAll12 = EdgeInsets.all(double12);
+
+  /// Edge insets all 24.
+  static const edgeInsetsAll24 = EdgeInsets.all(double24);
+
+  /// Edge insets only bottom 8.
+  static const edgeInsetsBottom8 = EdgeInsets.only(bottom: double8);
+
+  /// Edge insets only bottom 12.
+  static const edgeInsetsBottom12 = EdgeInsets.only(bottom: double12);
+
+  /// Edge insets only bottom 16.
+  static const edgeInsetsBottom16 = EdgeInsets.only(bottom: double16);
+
+  /// Edge insets bottom 8, left 16.
+  static const edgeInsetsBL16_8 = EdgeInsets.only(
+    bottom: double8,
+    left: double16,
+  );
+
   /// Горизонтально [double12], вертикально [double16] — строки списков (системы, сцены).
   static const edgeInsetsSymmetricH12V16 = EdgeInsets.symmetric(
     horizontal: double12,

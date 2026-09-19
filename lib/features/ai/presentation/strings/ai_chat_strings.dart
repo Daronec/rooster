@@ -93,12 +93,14 @@ final class AiChatStrings {
       FlutterI18n.translate(context, 'ai.modelNotLoadedChat');
 
   // Индикаторы состояния
-  static String modelReadyIndicator(BuildContext context, {required String modelName}) =>
-      FlutterI18n.translate(
-        context,
-        'ai.modelReadyIndicator',
-        translationParams: <String, String>{'name': modelName},
-      );
+  static String modelReadyIndicator(
+    BuildContext context, {
+    required String modelName,
+  }) => FlutterI18n.translate(
+    context,
+    'ai.modelReadyIndicator',
+    translationParams: <String, String>{'name': modelName},
+  );
 
   static String modelNotReadyIndicator(BuildContext context) =>
       FlutterI18n.translate(context, 'ai.modelNotReadyIndicator');

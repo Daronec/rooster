@@ -4,6 +4,17 @@
       "piecesShort": "pcs"
     }
   },
+  "mainDesktopNav": {
+    "appName": "Rooster",
+    "summary": "Summary",
+    "home": "Home",
+    "rooms": "Rooms",
+    "systems": "Systems",
+    "scenes": "Scenes",
+    "allSystemsOk": "All systems OK",
+    "extraMenu": "More",
+    "settings": "Settings"
+  },
   "notifications": {
     "taskDue": {
       "titleFallback": "Task",
@@ -148,9 +159,15 @@
     "languageEn": "English"
   },
   "devPanel": {
+    "screenTitle": "Dev / Sync",
     "loadingBody": "Loading…",
     "loadError": "Could not load dev panel",
-    "retryBody": "Retry"
+    "retryBody": "Retry",
+    "syncStatusLabel": "Status: {status}",
+    "networkIndicatorLabel": "Network (indicator): {status}",
+    "syncPausedLabel": "Outgoing sync paused",
+    "syncQueueAccumulatingLabel": "Queue accumulates locally",
+    "queueLabel": "Queue:"
   },
   "rootAuthGate": {
     "loadingBody": "Starting…",
@@ -162,6 +179,8 @@
     "loadError": "Could not load lists",
     "retryBody": "Retry",
     "screenTitle": "Lists",
+    "loadingAppBarTitle": "Lists",
+    "errorAppBarTitle": "Lists",
     "deleteConfirmTitle": "Delete list?",
     "deleteConfirmMessage": "The list will be removed on this device and synced when online.",
     "deleteCancel": "Cancel",
@@ -236,6 +255,8 @@
     "loadError": "Could not load tasks",
     "retryBody": "Retry",
     "screenTitle": "Tasks",
+    "loadingAppBarTitle": "Tasks",
+    "errorAppBarTitle": "Tasks",
     "emptyState": "No tasks. Tap + to add one.",
     "unknownList": "Other list",
     "groupTaskCount": "{count} tasks",

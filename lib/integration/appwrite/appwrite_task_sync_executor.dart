@@ -37,7 +37,7 @@ final class AppwriteTaskSyncExecutor implements ISyncRemoteExecutor {
     required Future<TaskListEntity?> Function(String listId) loadListLocal,
     required Future<PlanningPlanEntity?> Function(String planId) loadPlanLocal,
     required Future<MaterialStockSnapshotEntity?> Function()
-        loadMaterialStockSnapshotLocal,
+    loadMaterialStockSnapshotLocal,
     Future<void> Function(String taskId)? onTaskPushSucceeded,
   }) : _databases = Databases(client),
        _storage = Storage(client),
@@ -59,7 +59,7 @@ final class AppwriteTaskSyncExecutor implements ISyncRemoteExecutor {
   final Future<TaskListEntity?> Function(String listId) _loadListLocal;
   final Future<PlanningPlanEntity?> Function(String planId) _loadPlanLocal;
   final Future<MaterialStockSnapshotEntity?> Function()
-      _loadMaterialStockSnapshotLocal;
+  _loadMaterialStockSnapshotLocal;
   final Future<void> Function(String taskId)? _onTaskPushSucceeded;
 
   AppwriteEnvConfig get _env => _envConfig;
@@ -180,9 +180,9 @@ final class AppwriteTaskSyncExecutor implements ISyncRemoteExecutor {
     final map = Map<String, dynamic>.from(TaskEntityCodec.toMap(task));
     map['version'] = task.contentRevision;
     final sharedWith = <String>{
-      if (task.executorUserId != null && task.executorUserId!.trim().isNotEmpty)
+      if (task.executorUserId?.trim().isNotEmpty ?? false)
         task.executorUserId!.trim(),
-      if (task.observerUserId != null && task.observerUserId!.trim().isNotEmpty)
+      if (task.observerUserId?.trim().isNotEmpty ?? false)
         task.observerUserId!.trim(),
     }.toList(growable: false);
     return <String, dynamic>{

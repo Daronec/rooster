@@ -3,7 +3,8 @@ final class AppAuthUserEntity {
   /// Создаёт сущность.
   const AppAuthUserEntity({
     required this.uid,
-    required this.isAnonymous, this.email,
+    required this.isAnonymous,
+    this.email,
     this.displayName,
     this.photoUrl,
   });

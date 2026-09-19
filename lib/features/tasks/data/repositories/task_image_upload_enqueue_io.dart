@@ -19,7 +19,7 @@ Future<void> enqueueTaskImageUploadIfNeeded({
     if (image.localPath.isEmpty) {
       continue;
     }
-    if (image.remoteUrl != null && image.remoteUrl!.isNotEmpty) {
+    if (image.remoteUrl?.isNotEmpty ?? false) {
       continue;
     }
     final file = File(image.localPath);

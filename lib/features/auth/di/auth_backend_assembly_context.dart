@@ -62,7 +62,7 @@ final class AuthBackendAssemblyContext {
 
   /// Снимок склада материалов для исходящей синхронизации.
   final Future<MaterialStockSnapshotEntity?> Function()
-      loadMaterialStockSnapshot;
+  loadMaterialStockSnapshot;
 
   /// Репозиторий задач (входящий merge и ack после push).
   final ITasksRepository tasksRepository;

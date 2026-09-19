@@ -20,11 +20,11 @@ final class SyncManagerImpl extends ChangeNotifier implements ISyncManager {
     required IConnectivityGateway connectivity,
     required ILogWriter logger,
     SyncBackoff? backoff,
-  })  : _syncQueue = syncQueue,
-        _remoteExecutor = remoteExecutor,
-        _connectivity = connectivity,
-        _logger = logger,
-        _backoff = backoff ?? SyncBackoff() {
+  }) : _syncQueue = syncQueue,
+       _remoteExecutor = remoteExecutor,
+       _connectivity = connectivity,
+       _logger = logger,
+       _backoff = backoff ?? SyncBackoff() {
     _subscription = _connectivity.onOnline.listen(_onConnectivity);
   }
 

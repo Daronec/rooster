@@ -31,17 +31,17 @@ final class LlmModelStorageService {
   static Future<List<LlmModelConfig>> getDownloadedModels() async {
     final modelsDir = await getModelsDirectory();
     final directory = io.Directory(modelsDir);
-    
+
     if (!await directory.exists()) {
       return [];
     }
 
     final downloadedModels = <LlmModelConfig>[];
-    
+
     await for (final entity in directory.list()) {
       if (entity is io.File && entity.path.endsWith('.gguf')) {
         final fileName = entity.path.split('/').last;
-        
+
         // Find matching model config (case-insensitive)
         final matchingConfig = LlmModelConfig.availableModels.firstWhere(
           (config) => config.fileName.toLowerCase() == fileName.toLowerCase(),
@@ -54,21 +54,23 @@ final class LlmModelStorageService {
             fileName: fileName,
           ),
         );
-        
+
         // Get file size
         final fileSize = await entity.length();
-        
-        downloadedModels.add(LlmModelConfig(
-          name: matchingConfig.name,
-          description: matchingConfig.description,
-          url: matchingConfig.url,
-          fileSize: fileSize,
-          quantization: matchingConfig.quantization,
-          fileName: fileName, // Use actual filename from disk
-        ));
+
+        downloadedModels.add(
+          LlmModelConfig(
+            name: matchingConfig.name,
+            description: matchingConfig.description,
+            url: matchingConfig.url,
+            fileSize: fileSize,
+            quantization: matchingConfig.quantization,
+            fileName: fileName, // Use actual filename from disk
+          ),
+        );
       }
     }
-    
+
     return downloadedModels;
   }
 
@@ -76,7 +78,8 @@ final class LlmModelStorageService {
   static String formatFileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    if (bytes < 1024 * 1024 * 1024)
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 

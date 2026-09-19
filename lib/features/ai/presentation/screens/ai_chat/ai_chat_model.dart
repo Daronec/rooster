@@ -48,16 +48,17 @@ final class AiChatScreenModel extends ElementaryModel {
       ValueNotifier<List<LlmModelConfig>>([]);
   final ValueNotifier<LlmModelConfig?> selectedModelNotifier =
       ValueNotifier<LlmModelConfig?>(null);
-  final ValueNotifier<AiChatState> stateNotifier =
-      ValueNotifier<AiChatState>(AiChatState.idle);
+  final ValueNotifier<AiChatState> stateNotifier = ValueNotifier<AiChatState>(
+    AiChatState.idle,
+  );
   final ValueNotifier<List<AiChatMessageEntity>> messagesNotifier =
       ValueNotifier<List<AiChatMessageEntity>>([]);
-  final ValueNotifier<String?> lastErrorNotifier =
-      ValueNotifier<String?>(null);
+  final ValueNotifier<String?> lastErrorNotifier = ValueNotifier<String?>(null);
   final ValueNotifier<LlmModelManager?> modelManagerNotifier =
       ValueNotifier<LlmModelManager?>(null);
-  final ValueNotifier<double> downloadProgressNotifier =
-      ValueNotifier<double>(0.0);
+  final ValueNotifier<double> downloadProgressNotifier = ValueNotifier<double>(
+    0.0,
+  );
 
   // Получение данных для UI
   List<LlmModelConfig> get downloadedModels => _downloadedModels;

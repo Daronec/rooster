@@ -35,5 +35,6 @@ AuthScreenWidgetModel authScreenWidgetModelFactory(BuildContext context) {
     ),
     snackController: snack,
     logWriter: scope.logger,
+    sberIdGateway: scope.sberIdGateway,
   );
 }

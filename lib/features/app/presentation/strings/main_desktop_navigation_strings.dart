@@ -5,6 +5,9 @@ import 'package:flutter_i18n/flutter_i18n.dart';
 
 /// Строки боковой панели десктопа; ключи в [assets/flutter_i18n/ru.json], узел [mainDesktopNav].
 abstract final class MainDesktopNavigationStrings {
+  static String appName(BuildContext context) =>
+      FlutterI18n.translate(context, 'mainDesktopNav.appName');
+
   static String summary(BuildContext context) =>
       FlutterI18n.translate(context, 'mainDesktopNav.summary');
 

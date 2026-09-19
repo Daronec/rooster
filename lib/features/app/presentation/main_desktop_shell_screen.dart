@@ -7,7 +7,8 @@ import 'package:rooster/features/navigation/desktop_shell_navigation_host.dart';
 
 /// Оболочка десктопа: сайдбар + вложенный стек.
 @RoutePage(name: 'MainDesktopShellRoute')
-class MainDesktopShellScreen extends StatelessWidget implements AutoRouteWrapper {
+class MainDesktopShellScreen extends StatelessWidget
+    implements AutoRouteWrapper {
   /// Создаёт оболочку.
   const MainDesktopShellScreen({super.key});
 

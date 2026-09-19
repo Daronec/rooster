@@ -10,8 +10,8 @@ final class GooglePlayServicesStatusGatewayImpl
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       return true;
     }
-    final status =
-        await GoogleApiAvailability.instance.checkGooglePlayServicesAvailability();
+    final status = await GoogleApiAvailability.instance
+        .checkGooglePlayServicesAvailability();
     return status == GooglePlayServicesAvailability.success;
   }
 }

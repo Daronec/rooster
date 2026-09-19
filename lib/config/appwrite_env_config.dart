@@ -38,13 +38,15 @@ final class AppwriteEnvConfig {
   static const String defaultProjectId = 'rooster';
 
   /// Endpoint по умолчанию (FRA).
-  static const String defaultPublicEndpoint = 'https://fra.cloud.appwrite.io/v1';
+  static const String defaultPublicEndpoint =
+      'https://fra.cloud.appwrite.io/v1';
 
   /// Схема редиректа OAuth (зарегистрируйте платформу в консоли Appwrite).
   static const String defaultOauthSuccessUrl = 'appwrite-callback-rooster://';
 
   /// Редирект при ошибке OAuth.
-  static const String defaultOauthFailureUrl = 'appwrite-callback-rooster://failure';
+  static const String defaultOauthFailureUrl =
+      'appwrite-callback-rooster://failure';
 
   /// URL для письма восстановления пароля.
   static const String defaultPasswordRecoveryRedirectUrl =
@@ -69,27 +71,25 @@ final class AppwriteEnvConfig {
     }
     final environment = dotenv.env;
     final disabledRaw = environment['APPWRITE_DISABLED']?.trim().toLowerCase();
-    final disabled = disabledRaw == '1' ||
-        disabledRaw == 'true' ||
-        disabledRaw == 'yes';
+    final disabled =
+        disabledRaw == '1' || disabledRaw == 'true' || disabledRaw == 'yes';
     return AppwriteEnvConfig(
-      projectId:
-          environment['APPWRITE_PROJECT_ID']?.trim() ?? defaultProjectId,
+      projectId: environment['APPWRITE_PROJECT_ID']?.trim() ?? defaultProjectId,
       publicEndpoint:
           environment['APPWRITE_PUBLIC_ENDPOINT']?.trim() ??
-              defaultPublicEndpoint,
+          defaultPublicEndpoint,
       oauthSuccessUrl:
           environment['APPWRITE_OAUTH_SUCCESS_URL']?.trim() ??
-              defaultOauthSuccessUrl,
+          defaultOauthSuccessUrl,
       oauthFailureUrl:
           environment['APPWRITE_OAUTH_FAILURE_URL']?.trim() ??
-              defaultOauthFailureUrl,
+          defaultOauthFailureUrl,
       passwordRecoveryRedirectUrl:
           environment['APPWRITE_PASSWORD_RECOVERY_REDIRECT_URL']?.trim() ??
-              defaultPasswordRecoveryRedirectUrl,
+          defaultPasswordRecoveryRedirectUrl,
       teamInviteReturnUrl:
           environment['APPWRITE_TEAM_INVITE_RETURN_URL']?.trim() ??
-              defaultTeamInviteReturnUrl,
+          defaultTeamInviteReturnUrl,
       disabled: disabled,
       syncDatabaseId: environment['APPWRITE_SYNC_DATABASE_ID']?.trim() ?? '',
       syncTasksCollectionId:

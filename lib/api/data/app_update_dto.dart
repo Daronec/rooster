@@ -9,7 +9,6 @@ part 'app_update_dto.g.dart';
 /// {@endtemplate}
 @JsonSerializable(includeIfNull: false)
 class AppUpdateDto {
-
   /// {@macro UpdateDto}
   const AppUpdateDto({
     required this.minVersion,
@@ -20,6 +19,7 @@ class AppUpdateDto {
   /// Factory from JSON.
   factory AppUpdateDto.fromJson(Map<String, dynamic> json) =>
       _$AppUpdateDtoFromJson(json);
+
   /// Minimum allowed version.
   ///
   /// If current version of the app is lower,

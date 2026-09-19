@@ -9,7 +9,6 @@ import 'package:rooster/core/domain/entities/device_information/device_type.dart
 /// {@endtemplate}
 class DeviceInformationConverter
     extends Converter<DeviceInformationDto, DeviceInformationEntity> {
-
   /// {@macro device_information_converter}
   const DeviceInformationConverter({
     required DeviceTypeConverter deviceTypeConverter,

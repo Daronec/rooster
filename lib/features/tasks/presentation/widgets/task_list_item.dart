@@ -37,7 +37,6 @@ class TaskListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = AppColorScheme.of(context);
-    final materialScheme = Theme.of(context).colorScheme;
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppSizes.double12),
       child: DecoratedBox(
@@ -64,7 +63,7 @@ class TaskListItem extends StatelessWidget {
               tooltip: TasksStrings.menuMore(context),
               icon: Icon(
                 Icons.more_vert,
-                color: materialScheme.onSurfaceVariant,
+                color: colorScheme.gray600,
               ),
               onSelected: (action) {
                 switch (action) {

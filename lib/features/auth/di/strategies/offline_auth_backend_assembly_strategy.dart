@@ -6,6 +6,7 @@ import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
 import 'package:rooster/features/auth/domain/cloud_auth_unavailable_reason.dart';
 import 'package:rooster/features/profile/data/noop_profile_avatar_gateway_impl.dart';
 import 'package:rooster/features/profile/data/noop_profile_personal_data_gateway_impl.dart';
+import 'package:rooster/features/profile/data/noop_sber_id_gateway_impl.dart';
 import 'package:rooster/features/profile/data/noop_teams_gateway_impl.dart';
 import 'package:rooster/integration/sync/local_only_sync_executor.dart';
 
@@ -32,6 +33,7 @@ final class OfflineAuthBackendAssemblyStrategy
       profilePersonalDataGateway: const NoopProfilePersonalDataGatewayImpl(),
       profileAvatarGateway: const NoopProfileAvatarGatewayImpl(),
       teamsGateway: const NoopTeamsGatewayImpl(),
+      sberIdGateway: const NoopSberIdGatewayImpl(),
     );
   }
 }

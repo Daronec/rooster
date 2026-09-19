@@ -5,6 +5,7 @@ import 'package:rooster/uikit/layout_helpers/height.dart';
 import 'package:rooster/uikit/scaffold/app_scaffold.dart';
 import 'package:rooster/uikit/scaffold/default_app_bar.dart';
 import 'package:rooster/uikit/sizes/app_sizes.dart';
+import 'package:rooster/uikit/text/app_text_scheme.dart';
 
 /// Ошибка dev-панели (desktop).
 class DevPanelDesktopFailure extends StatelessWidget {
@@ -29,7 +30,7 @@ class DevPanelDesktopFailure extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: DefaultAppBar(
-        title: const Text('Dev / Sync'),
+        title: Text(DevPanelStrings.screenTitle(context)),
         actions: <Widget>[
           IconButton(
             onPressed: wm.refresh,
@@ -46,7 +47,7 @@ class DevPanelDesktopFailure extends StatelessWidget {
             const Height(AppSizes.double8),
             Text(
               error.toString(),
-              style: Theme.of(context).textTheme.bodySmall,
+              style: AppTextScheme.of(context).body.t14,
             ),
             const Height(AppSizes.double16),
             FilledButton.tonal(

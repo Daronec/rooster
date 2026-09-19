@@ -117,9 +117,7 @@ class TaskDetailScrollView extends StatelessWidget {
                         else
                           ...dependencyTasks.map(
                             (dependencyTask) => Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: AppSizes.double8,
-                              ),
+                              padding: AppSizes.edgeInsetsBottom8,
                               child: _DependencyTaskTile(
                                 task: dependencyTask,
                                 onTap: () {

@@ -22,12 +22,9 @@ final class TaskCreationInputFromTaskEntity {
           : endAt;
     }
 
-    final dueDateOnly = entity.isAllDay && entity.dueAt != null
-        ? DateTime(
-            entity.dueAt!.year,
-            entity.dueAt!.month,
-            entity.dueAt!.day,
-          )
+    final dueAt = entity.dueAt;
+    final dueDateOnly = entity.isAllDay && dueAt != null
+        ? DateTime(dueAt.year, dueAt.month, dueAt.day)
         : null;
 
     return TaskCreationInputEntity(
