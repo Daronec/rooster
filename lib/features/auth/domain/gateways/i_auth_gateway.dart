@@ -1,7 +1,7 @@
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
 import 'package:rooster/features/auth/domain/entities/app_phone_otp_challenge_entity.dart';
 
-/// Вход и сессия: Appwrite или офлайн-заглушка без облака.
+/// Вход и сессия: Cloud.ru (Sber ID) или офлайн-заглушка без облака.
 abstract interface class IAuthGateway {
   /// Поток смены пользователя.
   Stream<AppAuthUserEntity?> get authStateChanges;
@@ -18,10 +18,10 @@ abstract interface class IAuthGateway {
   /// Доступен ли вход через HUAWEI Account Kit (Android + HMS).
   bool get isHuaweiSignInAvailable;
 
-  /// Вход через Google (OAuth Appwrite на поддерживаемых платформах).
+  /// Вход через Google (OAuth на поддерживаемых платформах).
   Future<void> signInWithGoogle();
 
-  /// Вход через Apple (OAuth Appwrite на поддерживаемых платформах).
+  /// Вход через Apple (OAuth на поддерживаемых платформах).
   Future<void> signInWithApple();
 
   /// Вход через HUAWEI ID (HMS).
@@ -48,7 +48,7 @@ abstract interface class IAuthGateway {
     required String password,
   });
 
-  /// Регистрация с именем и телефоном (телефон — после сессии через Appwrite [updatePhone]).
+  /// Регистрация с именем и телефоном (телефон — после сессии через [updatePhone]).
   Future<void> signUpWithEmailPasswordProfile({
     required String email,
     required String password,

@@ -1,9 +1,9 @@
-/// Облачная авторизация: только Appwrite или отсутствие облачного входа.
+/// Облачная авторизация: Cloud.ru (Sber ID) или отсутствие облачного входа.
 enum AuthBackendStrategy {
-  /// Appwrite Auth (Google / Apple / email по платформе).
-  appwrite,
+  /// Cloud.ru + Sber ID OAuth.
+  cloud,
 
-  /// Appwrite в `.env` не настроен: только локальные данные.
+  /// Cloud.ru не настроен: только локальные данные.
   offlineOnly,
 }
 
@@ -22,12 +22,12 @@ final class HuaweiHmsHostProfile {
   final bool isLikelyHuaweiOrHonorDevice;
 }
 
-/// Возвращает [AuthBackendStrategy] по конфигурации Appwrite (без I/O).
+/// Возвращает [AuthBackendStrategy] по конфигурации Cloud.ru (без I/O).
 AuthBackendStrategy resolveAuthBackendStrategy({
-  required bool appwriteClientConfigured,
+  required bool cloudConfigured,
 }) {
-  if (appwriteClientConfigured) {
-    return AuthBackendStrategy.appwrite;
+  if (cloudConfigured) {
+    return AuthBackendStrategy.cloud;
   }
   return AuthBackendStrategy.offlineOnly;
 }

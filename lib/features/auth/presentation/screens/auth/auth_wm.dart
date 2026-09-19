@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:elementary/elementary.dart' show WidgetModel;
 import 'package:flutter/material.dart';
@@ -25,7 +24,7 @@ import 'package:rooster/util/union_state/empty_screen_body.dart';
 import 'package:union_state/union_state.dart';
 
 /// {@template auth_wm.class}
-/// [WidgetModel] экрана авторизации (Appwrite).
+/// [WidgetModel] экрана авторизации (Cloud.ru + Sber ID).
 /// {@endtemplate}
 class AuthScreenWidgetModel
     extends BaseWidgetModel<AuthScreen, AuthScreenModel> {
@@ -65,10 +64,10 @@ class AuthScreenWidgetModel
   /// Стратегия облака для экрана входа.
   AuthBackendStrategy get authBackendStrategy => model.authBackendStrategy;
 
-  /// Кнопка Google (Android, Appwrite OAuth).
+  /// Кнопка Google (Android, OAuth).
   bool get showGoogleSignInButton => model.showGoogleSignInButton;
 
-  /// Кнопка Apple (iOS, Appwrite OAuth).
+  /// Кнопка Apple (iOS, OAuth).
   bool get showAppleSignInButton => model.showAppleSignInButton;
 
   /// Текст вступления под выбранную стратегию авторизации.
@@ -101,7 +100,7 @@ class AuthScreenWidgetModel
     super.dispose();
   }
 
-  /// Вход через Google (Appwrite).
+  /// Вход через Google (OAuth).
   Future<void> onGoogleTap() async {
     try {
       await model.signInGoogle();
@@ -132,7 +131,7 @@ class AuthScreenWidgetModel
     return 'auth.signInFailed';
   }
 
-  /// Вход через Apple (Appwrite).
+  /// Вход через Apple (OAuth).
   Future<void> onAppleTap() async {
     try {
       await model.signInApple();
@@ -223,34 +222,14 @@ class AuthScreenWidgetModel
         return 'auth.huaweiSignInUnavailableOnFirebaseBackend';
       case CloudAuthUnavailableReason.huaweiSignInUnavailable:
         return 'auth.huaweiSignInUnavailable';
-      case CloudAuthUnavailableReason.appwriteNotConfigured:
-        return 'auth.cloudSignInBlockedAppwriteNotConfigured';
+      case CloudAuthUnavailableReason.cloudNotConfiguredInEnv:
+        return 'auth.cloudSignInBlockedCloudNotConfigured';
       case CloudAuthUnavailableReason.anonymousAuthNotSupported:
         return 'auth.anonymousAuthNotSupported';
     }
   }
 
-  /// Ключ строки для типичных ошибок [AppwriteException].
-  static String _appwriteAuthErrorTranslationKey(AppwriteException exception) {
-    final statusCode = exception.code;
-    if (statusCode == 401 || statusCode == 403) {
-      return 'auth.appwriteInvalidCredentials';
-    }
-    return 'auth.signInFailed';
-  }
-
   void _onAuthFlowObjectError(Object error) {
-    if (error is AppwriteException) {
-      logHandledFailureSeparateFromUserMessage(error);
-      snackController.addSnack(
-        FlutterI18n.translate(
-          context,
-          _appwriteAuthErrorTranslationKey(error),
-        ),
-        messageType: SnackMessageType.error,
-      );
-      return;
-    }
     if (error is CloudAuthUnavailableException) {
       snackController.addSnack(
         FlutterI18n.translate(
