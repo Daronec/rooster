@@ -1,28 +1,35 @@
 ```
-# Dependencies
+# Flutter/Dart specific
 .dart_tool/
 .packages
-.pub/
+.pub-cache/
 pubspec.lock
 
-# Build artifacts
+# Build outputs
 build/
-**/generated_plugin_registrant.*
+*.apk
+*.aab
+*.ipa
+*.app
 
-# Logs and temp files
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
 *.log
 *.tmp
 
-# Environment variables
+# Environment
 .env
 .env.local
 *.env.*
 
-# Editor/IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
+# Dependencies
+node_modules/
+vendor/
 
 # OS generated files
 .DS_Store

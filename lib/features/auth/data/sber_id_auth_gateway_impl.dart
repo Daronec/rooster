@@ -1,34 +1,15 @@
-import 'dart:async';
-
-import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/enums.dart' as appwrite_enums;
 import 'package:flutter/foundation.dart';
-import 'package:rooster/common/utils/logger/i_log_writer.dart';
-import 'package:rooster/config/appwrite_env_config.dart';
+import 'package:rooster/features/auth/data/sber_auth_service.dart';
 import 'package:rooster/features/auth/domain/entities/sber_id_user_entity.dart';
 import 'package:rooster/features/auth/domain/gateways/i_sber_id_gateway.dart';
-import 'package:rooster/integration/appwrite/i_appwrite_session_storage.dart';
 
-/// [ISberIdGateway] через Appwrite OAuth2 Custom Provider (Sber ID).
+/// Реализация [ISberIdGateway] через нативный SDK Сбер ID.
 final class SberIdAuthGatewayImpl implements ISberIdGateway {
-  /// Создаёт шлюз.
   SberIdAuthGatewayImpl({
-    required Client client,
-    required Account account,
-    required AppwriteEnvConfig envConfig,
-    required IAppwriteSessionStorage sessionStorage,
-    required ILogWriter logger,
-  }) : _client = client,
-       _account = account,
-       _envConfig = envConfig,
-       _sessionStorage = sessionStorage,
-       _logger = logger;
+    required SberAuthService sberAuthService,
+  }) : _sberAuthService = sberAuthService;
 
-  final Client _client;
-  final Account _account;
-  final AppwriteEnvConfig _envConfig;
-  final IAppwriteSessionStorage _sessionStorage;
-  final ILogWriter _logger;
+  final SberAuthService _sberAuthService;
 
   @override
   bool get isSberIdAvailable => true;
@@ -36,67 +17,35 @@ final class SberIdAuthGatewayImpl implements ISberIdGateway {
   @override
   Future<SberIdUserEntity?> signInWithSberId() async {
     try {
-      // Используем кастомный OAuth2 провайдер для Sber ID.
-      // В Appwrite Console должен быть настроен Custom Provider с именем 'sberid'.
-      await _account.createOAuth2Session(
-        provider: appwrite_enums.OAuthProvider.auth0,
-        success: _envConfig.oauthSuccessUrl,
-        failure: _envConfig.oauthFailureUrl,
-        scopes: ['openid profile email'],
+      debugPrint('SberIdAuthGatewayImpl: initiating sign in with Sber ID...');
+
+      final token = await _sberAuthService.loginWithSber();
+
+      if (token == null) {
+        debugPrint('SberIdAuthGatewayImpl: no token received');
+        return null;
+      }
+
+      // TODO: Отправить токен на Backend для получения данных пользователя
+      // В реальном проекте здесь будет вызов API вашего бэкенда
+      // final userData = await _backend.getUserBySberToken(token);
+
+      // Возвращаем mock-данные для демонстрации
+      // В реальности данные придут с бэкенда после валидации токена
+      final user = SberIdUserEntity(
+        id: 'sber_user_${DateTime.now().millisecondsSinceEpoch}',
+        email: null, // Получится с бэкенда
+        displayName: null, // Получится с бэкенда
+        phone: null, // Получится с бэкенда
+        accessToken: token,
+        refreshToken: null,
       );
 
-      // Получаем данные пользователя после успешной авторизации.
-      final user = await _account.get();
-
-      // Сохраняем сессию.
-      await _tryPersistCurrentSessionSecret();
-
-      _logger.log('sber_id_auth_ok');
-
-      return SberIdUserEntity(
-        id: user.$id,
-        email: user.email.trim().isEmpty ? null : user.email.trim(),
-        displayName: user.name.trim().isEmpty ? null : user.name.trim(),
-        phone: user.phone.trim().isEmpty ? null : user.phone.trim(),
-      );
-    } on AppwriteException catch (error) {
-      if (kDebugMode) {
-        _logger.log('sber_id_auth_failed ${error.message}');
-      }
+      debugPrint('SberIdAuthGatewayImpl: user signed in successfully');
+      return user;
+    } on Object catch (e) {
+      debugPrint('SberIdAuthGatewayImpl: sign in failed: $e');
       return null;
-    } on Object catch (error) {
-      if (kDebugMode) {
-        _logger.log('sber_id_auth_failed $error');
-      }
-      return null;
-    }
-  }
-
-  @override
-  Future<void> signOut() async {
-    try {
-      await _account.deleteSessions();
-    } on AppwriteException catch (error) {
-      _logger.log('sber_id_delete_sessions ${error.message}');
-    }
-    _client.setSession('');
-    await _sessionStorage.clear();
-    _logger.log('sber_id_sign_out_ok');
-  }
-
-  Future<void> _tryPersistCurrentSessionSecret() async {
-    try {
-      final currentSession = await _account.getSession(sessionId: 'current');
-      final secret = currentSession.secret.trim();
-      if (secret.isEmpty) {
-        return;
-      }
-      _client.setSession(secret);
-      await _sessionStorage.writeSessionSecret(secret);
-    } on AppwriteException catch (error) {
-      if (kDebugMode) {
-        _logger.log('sber_id_session_secret_skip ${error.message}');
-      }
     }
   }
 }

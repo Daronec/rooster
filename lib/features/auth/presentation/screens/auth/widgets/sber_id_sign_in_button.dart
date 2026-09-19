@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:rooster/features/auth/domain/gateways/i_sber_id_gateway.dart';
 
-/// Кнопка входа через Sber ID.
+/// Кнопка входа через Sber ID (нативный SDK).
 class SberIdSignInButton extends StatelessWidget {
   /// Создаёт кнопку.
   const SberIdSignInButton({
