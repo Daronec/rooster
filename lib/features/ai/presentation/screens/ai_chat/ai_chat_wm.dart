@@ -6,8 +6,12 @@ import 'package:rooster/features/ai/presentation/screens/ai_chat/ai_chat_screen.
 import 'package:rooster/features/ai/presentation/strings/ai_chat_strings.dart';
 
 /// WidgetModel экрана AI-чата: UI-логика и взаимодействие с экраном.
+///
+/// Управляет состоянием ввода сообщений, показом диалогов выбора модели
+/// и делегирует бизнес-логику [AiChatScreenModel].
 class AiChatScreenWidgetModel
     extends BaseWidgetModel<AiChatScreen, AiChatScreenModel> {
+  /// Создаёт widget model.
   AiChatScreenWidgetModel(
     super.model, {
     required super.snackController,
@@ -56,7 +60,7 @@ class AiChatScreenWidgetModel
         downloadedModels: model.downloadedModels,
         availableModels: LlmModelConfig.availableModels,
         selectedModel: model.selectedModel,
-        onModelSelected: (LlmModelConfig config) {
+        onModelSelected: (config) {
           model.selectModel(config);
           Navigator.pop(context);
           model.downloadAndLoadModel(config);

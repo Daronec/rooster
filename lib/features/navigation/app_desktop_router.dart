@@ -23,10 +23,6 @@ class AppDesktopRouter extends AppRouter {
           page: AuthRoute.page,
           initial: true,
         ),
-        AutoRoute(
-          path: AppRoutePaths.register,
-          page: RegisterRoute.page,
-        ),
       ],
     ),
     AutoRoute(

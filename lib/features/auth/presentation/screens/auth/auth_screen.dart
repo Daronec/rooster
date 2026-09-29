@@ -9,7 +9,7 @@ import 'package:rooster/features/auth/presentation/screens/auth/auth_wm.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/widgets/desktop/auth_screen_desktop.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/widgets/mobile/auth_screen_mobile.dart';
 
-/// Экран входа: Appwrite (Google / Apple / email по платформе и устройству).
+/// Экран входа через Sber ID.
 @RoutePage(name: 'AuthRoute')
 class AuthScreen extends BaseWidget<AuthScreenWidgetModel> {
   /// Создаёт экран.
@@ -24,17 +24,11 @@ class AuthScreen extends BaseWidget<AuthScreenWidgetModel> {
 
 /// Фабрика WM.
 AuthScreenWidgetModel authScreenWidgetModelFactory(BuildContext context) {
-  final scope = context.read<IAppScope>();
   final snack = SnackQueueProvider.of(context);
   return AuthScreenWidgetModel(
     AuthScreenModel(
-      authGateway: scope.authGateway,
-      authBackendStrategy: scope.authBackendStrategy,
-      isLikelyHuaweiOrHonorAndroidForAuthUi:
-          scope.isLikelyHuaweiOrHonorAndroidForAuthUi,
+      authGateway: context.read<IAppScope>().authGateway,
     ),
     snackController: snack,
-    logWriter: scope.logger,
-    sberIdGateway: scope.sberIdGateway,
   );
 }

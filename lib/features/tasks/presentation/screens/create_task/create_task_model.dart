@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:elementary/elementary.dart';
 import 'package:flutter/foundation.dart';
-import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
 import 'package:rooster/features/profile/domain/entities/profile_team_card_entity.dart';
@@ -36,7 +35,6 @@ final class CreateTaskScreenModel extends ElementaryModel {
     completeTaskAndConsumeStockMaterialsUseCase,
     required ITaskLocalImageGateway taskLocalImageGateway,
     required IAuthGateway authGateway,
-    required AuthBackendStrategy authBackendStrategy,
     required ITeamsGateway teamsGateway,
     required Uuid uuid,
     this.editingTaskId,
@@ -50,7 +48,6 @@ final class CreateTaskScreenModel extends ElementaryModel {
            completeTaskAndConsumeStockMaterialsUseCase,
        _taskLocalImageGateway = taskLocalImageGateway,
        _authGateway = authGateway,
-       _authBackendStrategy = authBackendStrategy,
        _teamsGateway = teamsGateway,
        _uuid = uuid;
 
@@ -73,7 +70,6 @@ final class CreateTaskScreenModel extends ElementaryModel {
   _completeTaskAndConsumeStockMaterialsUseCase;
   final ITaskLocalImageGateway _taskLocalImageGateway;
   final IAuthGateway _authGateway;
-  final AuthBackendStrategy _authBackendStrategy;
   final ITeamsGateway _teamsGateway;
   final Uuid _uuid;
 
@@ -178,13 +174,8 @@ final class CreateTaskScreenModel extends ElementaryModel {
     }
   }
 
-  /// Загрузить участников из команд Appwrite (если поддерживается стратегией и есть пользователь).
+  /// Загрузить участников из команд пользователя.
   Future<void> loadParticipantsFromTeams() async {
-    if (_authBackendStrategy != AuthBackendStrategy.appwrite) {
-      participantsListenable.value = const <TaskParticipantEntity>[];
-      participantsLoadingListenable.value = false;
-      return;
-    }
     final user = _authGateway.currentUser;
     if (user == null || user.isAnonymous) {
       participantsListenable.value = const <TaskParticipantEntity>[];

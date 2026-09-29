@@ -8,7 +8,10 @@ import 'package:rooster/features/ai/domain/gateways/i_local_llm_gateway.dart';
 import 'package:rooster/features/ai/domain/models/llm_model_config.dart';
 
 /// Implementation of [ILlmModelManager] that handles model download and initialization.
+///
+/// Управляет жизненным циклом LLM модели: скачивание, инициализация, генерация ответов.
 final class LlmModelManager implements ILlmModelManager {
+  /// Создаёт менеджер модели.
   LlmModelManager({
     required this.selectedModel,
   });
@@ -153,7 +156,7 @@ final class LlmModelManager implements ILlmModelManager {
     final result = await LlmModelDownloader.downloadModel(
       modelUrl: model.url,
       modelName: model.fileName,
-      onProgress: (double progress) {
+      onProgress: (progress) {
         onProgress?.call(progress);
       },
     );

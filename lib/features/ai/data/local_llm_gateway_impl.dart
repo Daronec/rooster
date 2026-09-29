@@ -36,7 +36,7 @@ final class LocalLLMGatewayImpl implements ILocalLLMGateway {
 
         // Check if file exists and is readable
         final file = io.File(modelPath);
-        if (!await file.exists()) {
+        if (!file.existsSync()) {
           throw Exception('Model file not found: $modelPath');
         }
         final fileSize = await file.length();
@@ -44,7 +44,7 @@ final class LocalLLMGatewayImpl implements ILocalLLMGateway {
 
         throw Exception(
           'Failed to load model. Native library may not be compiled or model format unsupported. '
-          'File exists: ${await file.exists()}, size: $fileSize bytes',
+          'File exists: ${file.existsSync()}, size: $fileSize bytes',
         );
       }
 

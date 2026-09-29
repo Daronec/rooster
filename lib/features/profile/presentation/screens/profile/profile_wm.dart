@@ -1,13 +1,11 @@
 import 'dart:async';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rooster/common/utils/logger/i_log_writer.dart';
 import 'package:rooster/common/utils/snack_queue/presentation/snack_message_type.dart';
 import 'package:rooster/core/architecture/presentation/base_widget_model.dart';
-import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
 import 'package:rooster/features/navigation/app_router.dart';
 import 'package:rooster/features/navigation/desktop_shell_navigation_host.dart';
@@ -60,18 +58,15 @@ class ProfileScreenWidgetModel
 
   /// Кнопка «Войти»: нет сессии и облачный вход доступен по стратегии.
   bool showSignInButton(AppAuthUserEntity? sessionUser) =>
-      model.authBackendStrategy != AuthBackendStrategy.offlineOnly &&
       sessionUser == null;
 
   /// Редактирование аватара (галерея) доступно при активной облачной/HMS сессии.
   bool showAvatarEditButton(AppAuthUserEntity? sessionUser) =>
-      sessionUser != null &&
-      model.authBackendStrategy != AuthBackendStrategy.offlineOnly;
+      sessionUser != null;
 
   /// Редактирование имени доступно после загрузки данных и при облачной стратегии.
   bool showPersonalDataEditButton(AppAuthUserEntity? sessionUser) =>
       sessionUser != null &&
-      model.authBackendStrategy != AuthBackendStrategy.offlineOnly &&
       profileNotifier.value != null;
 
   /// Вернуть тело экрана в контент после ошибки.
@@ -397,7 +392,7 @@ class ProfileScreenWidgetModel
         ProfileStrings.teamsCreateSuccess(context),
         messageType: SnackMessageType.success,
       );
-    } on AppwriteException catch (error) {
+    } on Exception catch (error) {
       snackController.addSnack(
         ProfileStrings.teamsOperationFailed(context),
         messageType: SnackMessageType.error,
@@ -546,17 +541,9 @@ class ProfileScreenWidgetModel
         ProfileStrings.teamsInviteSuccess(context),
         messageType: SnackMessageType.success,
       );
-    } on AppwriteException catch (error) {
-      final message =
-          error.code == 501 &&
-              error.type == 'user_auth_method_unsupported' &&
-              (error.message ?? '').contains(
-                'Invites authentication is disabled for this project',
-              )
-          ? ProfileStrings.teamsInvitesDisabled(context)
-          : ProfileStrings.teamsOperationFailed(context);
+    } on Exception catch (error) {
       snackController.addSnack(
-        message,
+        ProfileStrings.teamsOperationFailed(context),
         messageType: SnackMessageType.error,
       );
       logHandledFailureSeparateFromUserMessage(error);
@@ -587,7 +574,7 @@ class ProfileScreenWidgetModel
         ProfileStrings.teamsLeaveSuccess(context),
         messageType: SnackMessageType.success,
       );
-    } on AppwriteException catch (error) {
+    } on Exception catch (error) {
       snackController.addSnack(
         ProfileStrings.teamsOperationFailed(context),
         messageType: SnackMessageType.error,

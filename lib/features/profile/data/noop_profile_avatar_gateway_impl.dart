@@ -2,19 +2,23 @@ import 'dart:typed_data';
 
 import 'package:rooster/features/profile/domain/gateways/i_profile_avatar_gateway.dart';
 
-/// Заглушка, когда облачный профиль недоступен ([AuthBackendStrategy.offlineOnly]).
+/// Noop implementation of [IProfileAvatarGateway].
+///
+/// Used when avatar editing is not available or not needed.
 final class NoopProfileAvatarGatewayImpl implements IProfileAvatarGateway {
-  /// Создаёт заглушку.
+  /// Creates a noop implementation.
   const NoopProfileAvatarGatewayImpl();
 
   @override
-  Future<String?> getPersistedLocalAvatarPath(String userId) async => null;
+  Future<String?> getPersistedLocalAvatarPath(String userId) async {
+    return null;
+  }
 
   @override
   Future<void> saveAvatar({
     required String userId,
     required Uint8List imageBytes,
   }) async {
-    throw UnsupportedError('profile_avatar_unavailable_offline');
+    // No-op
   }
 }

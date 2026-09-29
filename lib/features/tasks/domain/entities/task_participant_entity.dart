@@ -16,7 +16,3 @@ final class TaskParticipantEntity {
   /// Текст для отображения в UI (имя, email или fallback).
   final String label;
 }
-
-
-
-

@@ -1,31 +1,29 @@
 import 'package:rooster/features/profile/domain/entities/profile_team_card_entity.dart';
 
-/// Доступ к командам Appwrite (список, создание, приглашение, выход).
+/// Шлюз для работы с командами (cloud.ru).
 abstract interface class ITeamsGateway {
-  /// URL редиректа после приглашения в команду (платформы в консоли Appwrite).
-  String get teamInvitationReturnUrl;
+  /// Загрузить команды пользователя с участниками.
+  Future<List<ProfileTeamCardEntity>> loadTeamsWithMembers(String userId);
 
-  /// Команды текущего пользователя с полным списком участников.
-  Future<List<ProfileTeamCardEntity>> loadTeamsWithMembers(
-    String currentUserId,
-  );
-
-  /// Создать команду; создатель получает роль владельца.
-  Future<ProfileTeamCardEntity> createTeam({
+  /// Создать новую команду.
+  Future<void> createTeam({
     required String name,
     required String currentUserId,
   });
 
-  /// Пригласить по email (письмо со ссылкой; [invitationReturnUrl] из платформ Appwrite).
+  /// Пригласить участника по email.
   Future<void> inviteByEmail({
     required String teamId,
     required String email,
     required String invitationReturnUrl,
   });
 
-  /// Покинуть команду или отозвать членство.
+  /// Покинуть команду.
   Future<void> leaveTeam({
     required String teamId,
     required String membershipId,
   });
+
+  /// URL для письма приглашения в команду.
+  String get teamInvitationReturnUrl;
 }

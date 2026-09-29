@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 /// Сущность пользователя, полученная через Sber ID (нативный SDK).
 class SberIdUserEntity extends Equatable {
+  /// Создаёт сущность пользователя.
   const SberIdUserEntity({
     required this.id,
     required this.email,
@@ -29,6 +30,7 @@ class SberIdUserEntity extends Equatable {
   /// Refresh token для обновления access token.
   final String? refreshToken;
 
+  /// Сериализация в JSON.
   Map<String, Object?> toJson() => {
         'id': id,
         'email': email,
@@ -38,9 +40,10 @@ class SberIdUserEntity extends Equatable {
         'refresh_token': refreshToken,
       };
 
+  /// Десериализация из JSON.
   factory SberIdUserEntity.fromJson(Map<String, Object?> json) {
     return SberIdUserEntity(
-      id: json['id'] as String? ?? json['user_id'] as String,
+      id: json['id'] as String? ?? json['user_id'] as String? ?? '',
       email: json['email'] as String?,
       displayName: json['display_name'] as String? ?? json['first_name'] as String?,
       phone: json['phone'] as String?,

@@ -24,5 +24,3 @@ class TaskChangeHistoryMobileLoading extends StatelessWidget {
     );
   }
 }
-
-

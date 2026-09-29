@@ -2,14 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:rooster/features/ai/presentation/strings/ai_chat_strings.dart';
 
 /// Виджет индикатора прогресса инициализации/скачивания модели.
+///
+/// Отображает прогресс-бар с процентом загрузки при скачивании LLM модели
+/// или простой индикатор при инициализации уже скачанной модели.
 class AiChatInitProgress extends StatelessWidget {
+  /// Создаёт виджет индикатора.
   const AiChatInitProgress({
     super.key,
     this.downloadProgress = 0.0,
     this.isDownloading = false,
   });
 
+  /// Прогресс скачивания (0.0 - 1.0).
   final double downloadProgress;
+
+  /// Скачивается ли модель в данный момент.
   final bool isDownloading;
 
   @override
@@ -31,7 +38,7 @@ class AiChatInitProgress extends StatelessWidget {
               child: CircularProgressIndicator(
                 value: downloadProgress > 0 ? downloadProgress : null,
                 strokeWidth: 12,
-                backgroundColor: theme.colorScheme.surfaceVariant,
+                backgroundColor: theme.colorScheme.surfaceContainerHighest,
                 valueColor: AlwaysStoppedAnimation<Color>(
                   theme.colorScheme.primary,
                 ),

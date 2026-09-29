@@ -11,5 +11,3 @@ abstract interface class ITaskChangeHistoryWriter {
   /// Добавить событие в историю.
   Future<void> addChange(TaskChangeEntity change);
 }
-
-

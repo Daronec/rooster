@@ -1,5 +1,9 @@
 /// Конфигурация доступных LLM моделей.
+///
+/// Содержит метаданные о доступных моделях: название, описание, URL скачивания,
+/// размер файла и квантование.
 final class LlmModelConfig {
+  /// Создаёт конфигурацию модели.
   const LlmModelConfig({
     required this.name,
     required this.description,

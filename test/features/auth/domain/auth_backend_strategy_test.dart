@@ -3,17 +3,17 @@ import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
 
 void main() {
   group('resolveAuthBackendStrategy', () {
-    test('returns appwrite when client is configured', () {
+    test('returns sberId regardless of client configuration', () {
       expect(
         resolveAuthBackendStrategy(appwriteClientConfigured: true),
-        AuthBackendStrategy.appwrite,
+        AuthBackendStrategy.sberId,
       );
     });
 
-    test('returns offlineOnly when client is not configured', () {
+    test('returns sberId when client is not configured', () {
       expect(
         resolveAuthBackendStrategy(appwriteClientConfigured: false),
-        AuthBackendStrategy.offlineOnly,
+        AuthBackendStrategy.sberId,
       );
     });
   });

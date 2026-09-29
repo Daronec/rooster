@@ -68,10 +68,10 @@ abstract interface class IAppScope {
   /// Аватар профиля (облако / локально в зависимости от бэкенда).
   IProfileAvatarGateway get profileAvatarGateway;
 
-  /// Имя и фамилия в облаке (Appwrite).
+  /// Имя и фамиля в облаке (Appwrite).
   IProfilePersonalDataGateway get profilePersonalDataGateway;
 
-  /// Команды Appwrite (или заглушка без облака).
+  /// Команды пользователя.
   ITeamsGateway get teamsGateway;
 
   /// Задачи.

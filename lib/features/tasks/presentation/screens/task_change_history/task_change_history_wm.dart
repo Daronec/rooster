@@ -32,6 +32,3 @@ class TaskChangeHistoryScreenWidgetModel extends BaseWidgetModel<
     await context.router.maybePop();
   }
 }
-
-
-

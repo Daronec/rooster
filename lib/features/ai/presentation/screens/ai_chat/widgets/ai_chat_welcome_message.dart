@@ -3,6 +3,7 @@ import 'package:rooster/features/ai/presentation/strings/ai_chat_strings.dart';
 
 /// Виджет приветственного сообщения.
 class AiChatWelcomeMessage extends StatelessWidget {
+  /// AiChatWelcomeMessage` constructor.
   const AiChatWelcomeMessage({super.key});
 
   @override

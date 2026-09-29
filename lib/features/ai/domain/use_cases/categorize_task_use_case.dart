@@ -1,7 +1,10 @@
 import 'package:rooster/features/ai/domain/gateways/i_local_llm_gateway.dart';
 
 /// Use Case для категоризации задачи с помощью LLM.
+///
+/// Определяет категорию задачи: 'work', 'personal', 'learning', 'health'.
 final class CategorizeTaskUseCase {
+  /// Создаёт use case.
   CategorizeTaskUseCase({required this.llmGateway});
 
   /// Gateway для доступа к локальной LLM.
@@ -17,8 +20,8 @@ final class CategorizeTaskUseCase {
     }
 
     try {
-      final prompt =
-          '''Ты — помощник по управлению задачами.
+      final prompt = '''
+Ты — помощник по управлению задачами.
 Определи категорию задачи на основе её описания.
 Ответь одним словом: work, personal, learning или health.
 

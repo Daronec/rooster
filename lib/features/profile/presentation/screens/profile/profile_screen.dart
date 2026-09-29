@@ -30,7 +30,6 @@ ProfileScreenWidgetModel profileScreenWidgetModelFactory(BuildContext context) {
   return ProfileScreenWidgetModel(
     ProfileScreenModel(
       authGateway: scope.authGateway,
-      authBackendStrategy: scope.authBackendStrategy,
       profileAvatarGateway: scope.profileAvatarGateway,
       profilePersonalDataGateway: scope.profilePersonalDataGateway,
       teamsGateway: scope.teamsGateway,

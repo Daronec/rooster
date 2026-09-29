@@ -1,83 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:rooster/features/profile/domain/entities/profile_team_card_entity.dart';
-import 'package:rooster/features/profile/presentation/screens/profile/profile_wm.dart';
+import 'package:rooster/features/profile/domain/entities/profile_team_member_entity.dart';
 import 'package:rooster/features/profile/presentation/strings/profile_strings.dart';
 import 'package:rooster/uikit/colors/app_color_scheme.dart';
 import 'package:rooster/uikit/layout_helpers/height.dart';
 import 'package:rooster/uikit/sizes/app_sizes.dart';
-import 'package:rooster/uikit/text/app_text_scheme.dart';
 
-/// Виджет карточки команды
+/// Callback для форматирования строки участника.
+typedef MemberLineFormatter = String Function(ProfileTeamMemberEntity);
+
+/// Карточка команды.
 class ProfileTeamCard extends StatelessWidget {
-  ///
+  /// Создаёт карточку команды.
   const ProfileTeamCard({
-    required this.widgetModel,
     required this.team,
-    required this.onLeave,
+    required this.onInvitePressed,
+    required this.onLeavePressed,
+    required this.memberLineFormatter,
     super.key,
   });
 
-  /// Сущность команды
+  /// Карточка команды.
   final ProfileTeamCardEntity team;
 
-  /// Коллбэк приглашения
-  final VoidCallback onLeave;
+  /// Callback для приглашения в команду.
+  final VoidCallback onInvitePressed;
 
-  /// Widget model профиля.
-  final ProfileScreenWidgetModel widgetModel;
+  /// Callback для выхода из команды.
+  final VoidCallback onLeavePressed;
+
+  /// Форматирование строки участника.
+  final MemberLineFormatter memberLineFormatter;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = AppColorScheme.of(context);
-    final textScheme = AppTextScheme.of(context);
+
     return Card(
-      margin: EdgeInsets.zero,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSizes.double12),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(AppSizes.double12),
+        padding: const EdgeInsets.all(AppSizes.double16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  team.teamName,
-                  style: textScheme.body.t16Medium,
-                ),
-                InkWell(
-                  onTap: widgetModel.onInviteToTeamPressed,
-                  child: CircleAvatar(
-                    backgroundColor: colorScheme.primaryNormal,
-                    radius: AppSizes.double16,
-                    child: const Center(
-                      child: Icon(Icons.add),
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    team.teamName,
+                    style: const TextStyle(
+                      fontSize: AppSizes.double16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
+                if (team.currentUserIsOwner) ...<Widget>[
+                  Icon(
+                    Icons.verified_user,
+                    size: AppSizes.double18,
+                    color: colorScheme.primaryNormal,
+                  ),
+                  const Width(AppSizes.double8),
+                ],
+                if (team.currentUserIsOwner)
+                  IconButton(
+                    icon: const Icon(Icons.email_outlined, size: AppSizes.double18),
+                    onPressed: onInvitePressed,
+                    tooltip: ProfileStrings.teamsInviteDialogTitle(context),
+                  ),
+                if (!team.currentUserIsOwner)
+                  IconButton(
+                    icon: const Icon(Icons.exit_to_app, size: AppSizes.double18),
+                    onPressed: onLeavePressed,
+                    tooltip: ProfileStrings.teamsLeaveButton(context),
+                  ),
               ],
             ),
             const Height(AppSizes.double8),
             Text(
               ProfileStrings.teamsMembersLabel(context),
-              style: textScheme.body.t12.copyWith(color: colorScheme.gray600),
+              style: const TextStyle(
+                fontSize: AppSizes.double12,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const Height(AppSizes.double4),
             ...team.members.map(
               (member) => Padding(
-                padding: const EdgeInsets.only(top: AppSizes.double4),
+                padding: const EdgeInsets.only(bottom: AppSizes.double4),
                 child: Text(
-                  widgetModel.teamMemberLine(member),
-                  style: textScheme.body.t14,
-                ),
-              ),
-            ),
-            const Height(AppSizes.double12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: OutlinedButton(
-                onPressed: onLeave,
-                child: Text(
-                  ProfileStrings.teamsLeaveButton(context),
+                  memberLineFormatter(member),
+                  style: const TextStyle(fontSize: AppSizes.double14),
                 ),
               ),
             ),
@@ -86,4 +102,16 @@ class ProfileTeamCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Расширение для Width.
+class Width extends StatelessWidget {
+  /// Создаёт горизонтальный отступ.
+  const Width(this.width, {super.key});
+
+  /// Ширина отступа.
+  final double width;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(width: width);
 }

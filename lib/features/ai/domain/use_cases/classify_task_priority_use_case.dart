@@ -1,7 +1,10 @@
 import 'package:rooster/features/ai/domain/gateways/i_local_llm_gateway.dart';
 
 /// Use Case для определения приоритета задачи с помощью LLM.
+///
+/// Определяет приоритет задачи: 'high', 'medium', 'low'.
 final class ClassifyTaskPriorityUseCase {
+  /// Создаёт use case.
   ClassifyTaskPriorityUseCase({required this.llmGateway});
 
   /// Gateway для доступа к локальной LLM.
@@ -17,8 +20,8 @@ final class ClassifyTaskPriorityUseCase {
     }
 
     try {
-      final prompt =
-          '''Ты — помощник по управлению задачами.
+      final prompt = '''
+Ты — помощник по управлению задачами.
 Определи приоритет задачи на основе её описания.
 Ответь одним словом: high, medium или low.
 

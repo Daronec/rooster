@@ -488,22 +488,6 @@ class ProfileRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [RegisterScreen]
-class RegisterRoute extends PageRouteInfo<void> {
-  const RegisterRoute({List<PageRouteInfo>? children})
-    : super(RegisterRoute.name, initialChildren: children);
-
-  static const String name = 'RegisterRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const RegisterScreen();
-    },
-  );
-}
-
-/// generated route for
 /// [RootAuthGateScreen]
 class RootAuthGateRoute extends PageRouteInfo<void> {
   const RootAuthGateRoute({List<PageRouteInfo>? children})

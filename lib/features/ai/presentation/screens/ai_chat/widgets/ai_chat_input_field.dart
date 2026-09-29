@@ -3,10 +3,14 @@ import 'package:rooster/features/ai/presentation/screens/ai_chat/ai_chat_model.d
 import 'package:rooster/features/ai/presentation/screens/ai_chat/ai_chat_wm.dart';
 import 'package:rooster/features/ai/presentation/strings/ai_chat_strings.dart';
 
-/// Виджет поля ввода сообщения.
+/// Виджет поля ввода сообщения для AI-чата.
+///
+/// Содержит текстовое поле с кнопкой отправки и индикатором состояния отправки.
 class AiChatInputField extends StatelessWidget {
+  /// Создаёт виджет поля ввода.
   const AiChatInputField({required this.wm, super.key});
 
+  /// Widget model AI-чата.
   final AiChatScreenWidgetModel wm;
 
   @override

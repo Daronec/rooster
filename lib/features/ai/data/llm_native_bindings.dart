@@ -4,7 +4,11 @@ import 'dart:ffi' as ffi;
 import 'package:ffi/ffi.dart';
 
 /// FFI bindings к native LLM library.
+///
+/// Предоставляет интерфейс для инициализации, генерации и управления
+/// нативной LLM моделью через FFI.
 final class LlmNativeBindings {
+  /// Создаёт привязки к нативной библиотеке.
   LlmNativeBindings(ffi.DynamicLibrary library) {
     // Android: libllm_bridge.so
     // iOS: libllm_bridge.dylib
@@ -127,7 +131,7 @@ final class LlmNativeBindings {
   /// Convert a null-terminated char pointer to Dart String.
   String _pointerToString(ffi.Pointer<ffi.Char> ptr) {
     final bytes = <int>[];
-    int i = 0;
+    var i = 0;
     while (ptr[i] != 0) {
       bytes.add(ptr[i]);
       i++;

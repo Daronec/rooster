@@ -12,8 +12,3 @@ final class TaskMissingMaterialEntity {
   /// Сколько не хватает (положительное число).
   final double missingQuantity;
 }
-
-
-
-
-

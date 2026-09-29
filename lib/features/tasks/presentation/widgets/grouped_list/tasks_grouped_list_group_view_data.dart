@@ -22,5 +22,3 @@ final class TasksGroupedListGroupViewData {
   /// Задачи в группе.
   final List<TaskEntity> tasks;
 }
-
-

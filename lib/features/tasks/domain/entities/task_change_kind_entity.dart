@@ -9,6 +9,3 @@ enum TaskChangeKindEntity {
   /// Удалена.
   deleted,
 }
-
-
-

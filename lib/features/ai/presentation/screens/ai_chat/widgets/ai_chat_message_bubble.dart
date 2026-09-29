@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:rooster/features/ai/presentation/screens/ai_chat/ai_chat_model.dart';
 
-/// Виджет пузырька сообщения.
+/// Виджет пузырька сообщения в AI-чате.
+///
+/// Отображает сообщение пользователя или ассистента с соответствующим стилем.
 class AiChatMessageBubble extends StatelessWidget {
+  /// Создаёт виджет пузырька.
   const AiChatMessageBubble(this.message, {super.key});
 
+  /// Сообщение для отображения.
   final AiChatMessageEntity message;
 
   @override

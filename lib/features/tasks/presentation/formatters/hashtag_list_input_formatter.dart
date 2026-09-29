@@ -53,5 +53,3 @@ final class HashtagListInputFormatter extends TextInputFormatter {
     return base;
   }
 }
-
-

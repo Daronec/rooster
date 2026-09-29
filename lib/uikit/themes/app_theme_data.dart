@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rooster/uikit/buttons/app_button_scheme.dart';
 import 'package:rooster/uikit/colors/app_color_scheme.dart';

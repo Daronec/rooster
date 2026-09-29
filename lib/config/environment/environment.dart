@@ -6,10 +6,24 @@ import 'package:rooster/config/environment/build_type.dart';
 /// {@endtemplate}
 class Environment {
   /// {@macro environment.class}
-  const Environment({required this.buildType});
+  const Environment({
+    required this.buildType,
+    this.serverlessEndpoint = '',
+    this.storageEndpoint = '',
+    this.tokenExchangeEndpoint = '',
+  });
 
   /// Build type.
   final BuildType buildType;
+
+  /// Endpoint для Yandex Serverless Functions.
+  final String serverlessEndpoint;
+
+  /// Endpoint для Yandex Object Storage.
+  final String storageEndpoint;
+
+  /// Endpoint для обмена токенов (Yandex IAM).
+  final String tokenExchangeEndpoint;
 
   /// Is this application running in dev mode.
   bool get isDev => buildType == BuildType.dev;

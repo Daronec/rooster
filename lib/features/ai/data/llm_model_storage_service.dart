@@ -9,7 +9,7 @@ final class LlmModelStorageService {
   static Future<String> getModelsDirectory() async {
     final directory = await getApplicationDocumentsDirectory();
     final modelsDir = io.Directory('${directory.path}/models');
-    if (!await modelsDir.exists()) {
+    if (!modelsDir.existsSync()) {
       await modelsDir.create(recursive: true);
     }
     return modelsDir.path;
@@ -24,7 +24,7 @@ final class LlmModelStorageService {
   /// Check if a model file exists.
   static Future<bool> modelExists(String fileName) async {
     final path = await getModelFilePath(fileName);
-    return io.File(path).exists();
+    return io.File(path).existsSync();
   }
 
   /// Get list of downloaded models.
@@ -32,7 +32,7 @@ final class LlmModelStorageService {
     final modelsDir = await getModelsDirectory();
     final directory = io.Directory(modelsDir);
 
-    if (!await directory.exists()) {
+    if (!directory.existsSync()) {
       return [];
     }
 
@@ -78,8 +78,9 @@ final class LlmModelStorageService {
   static String formatFileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024)
+    if (bytes < 1024 * 1024 * 1024) {
       return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
@@ -87,7 +88,7 @@ final class LlmModelStorageService {
   static Future<bool> deleteModel(String fileName) async {
     final path = await getModelFilePath(fileName);
     final file = io.File(path);
-    if (await file.exists()) {
+    if (file.existsSync()) {
       await file.delete();
       return true;
     }

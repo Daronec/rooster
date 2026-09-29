@@ -9,7 +9,6 @@ import 'package:rooster/features/app/presentation/main_flow.dart';
 import 'package:rooster/features/auth/presentation/auth_flow.dart';
 import 'package:rooster/features/auth/presentation/root_auth_gate/root_auth_gate_screen.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_screen.dart';
-import 'package:rooster/features/auth/presentation/screens/register/register_screen.dart';
 import 'package:rooster/features/dev_panel/presentation/dev_panel_flow.dart';
 import 'package:rooster/features/dev_panel/presentation/screens/dev_panel/dev_panel_screen.dart';
 import 'package:rooster/features/planning/presentation/planning_flow.dart';
@@ -63,10 +62,6 @@ class AppRouter extends RootStackRouter {
           path: AppRoutePaths.auth,
           page: AuthRoute.page,
           initial: true,
-        ),
-        AutoRoute(
-          path: AppRoutePaths.register,
-          page: RegisterRoute.page,
         ),
       ],
     ),

@@ -80,7 +80,6 @@ CreateTaskScreenWidgetModel createTaskScreenWidgetModelFactory(
           scope.completeTaskAndConsumeStockMaterialsUseCase,
       taskLocalImageGateway: scope.taskLocalImageGateway,
       authGateway: scope.authGateway,
-      authBackendStrategy: scope.authBackendStrategy,
       teamsGateway: scope.teamsGateway,
       uuid: const Uuid(),
       editingTaskId: routeArgs.taskId,

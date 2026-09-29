@@ -64,7 +64,7 @@ class _AiChatScreenContent extends StatelessWidget {
           // Индикатор состояния модели
           if (wm.hasModelManager) ...[
             Padding(
-              padding: const EdgeInsets.only(right: 8.0),
+              padding: const EdgeInsets.only(right: 8),
               child: Text(
                 wm.isModelReady
                     ? AiChatStrings.modelReadyIndicator(

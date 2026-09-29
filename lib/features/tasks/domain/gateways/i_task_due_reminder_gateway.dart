@@ -11,5 +11,3 @@ abstract interface class ITaskDueReminderGateway {
   /// Отменить локальное напоминание по id задачи.
   Future<void> cancelDueReminder(String taskId);
 }
-
-

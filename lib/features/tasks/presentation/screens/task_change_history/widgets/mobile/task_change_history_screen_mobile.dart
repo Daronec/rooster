@@ -26,7 +26,3 @@ class TaskChangeHistoryScreenMobile extends StatelessWidget {
     );
   }
 }
-
-
-
-

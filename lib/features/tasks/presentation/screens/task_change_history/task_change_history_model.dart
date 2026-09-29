@@ -58,6 +58,3 @@ final class TaskChangeHistoryScreenModel extends ElementaryModel {
     super.dispose();
   }
 }
-
-
-

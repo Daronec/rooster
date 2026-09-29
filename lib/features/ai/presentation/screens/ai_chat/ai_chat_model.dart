@@ -9,21 +9,31 @@ import 'package:rooster/features/app/di/app_scope.dart';
 
 /// Состояние чата.
 enum AiChatState {
+  /// Ожидание действия пользователя.
   idle,
+
+  /// Загрузка или инициализация модели.
   loading,
+
+  /// Отправка сообщения и ожидание ответа.
   sending,
 }
 
 /// Представление сообщения для UI.
 final class AiChatMessageEntity {
+  /// Создаёт сущность сообщения.
   const AiChatMessageEntity({required this.role, required this.text});
 
+  /// Роль сообщения ("user" или "assistant").
   final String role;
+
+  /// Текст сообщения.
   final String text;
 }
 
 /// Модель экрана AI-чата: бизнес-логика и состояние.
 final class AiChatScreenModel extends ElementaryModel {
+  /// Создаёт модель экрана.
   AiChatScreenModel({
     required IAppScope appScope,
   }) : _appScope = appScope;
@@ -44,30 +54,58 @@ final class AiChatScreenModel extends ElementaryModel {
   StreamSubscription<Object?>? _subscription;
 
   // Notifiers для UI
+  /// Уведомления о списке скачанных моделей.
   final ValueNotifier<List<LlmModelConfig>> downloadedModelsNotifier =
       ValueNotifier<List<LlmModelConfig>>([]);
+
+  /// Уведомления о выбранной модели.
   final ValueNotifier<LlmModelConfig?> selectedModelNotifier =
       ValueNotifier<LlmModelConfig?>(null);
+
+  /// Уведомления о состоянии чата.
   final ValueNotifier<AiChatState> stateNotifier = ValueNotifier<AiChatState>(
     AiChatState.idle,
   );
+
+  /// Уведомления о сообщениях чата.
   final ValueNotifier<List<AiChatMessageEntity>> messagesNotifier =
       ValueNotifier<List<AiChatMessageEntity>>([]);
+
+  /// Уведомления о последней ошибке.
   final ValueNotifier<String?> lastErrorNotifier = ValueNotifier<String?>(null);
+
+  /// Уведомления о менеджере модели.
   final ValueNotifier<LlmModelManager?> modelManagerNotifier =
       ValueNotifier<LlmModelManager?>(null);
+
+  /// Уведомления о прогрессе скачивания.
   final ValueNotifier<double> downloadProgressNotifier = ValueNotifier<double>(
-    0.0,
+    0,
   );
 
   // Получение данных для UI
+  /// Список скачанных моделей.
   List<LlmModelConfig> get downloadedModels => _downloadedModels;
+
+  /// Выбранная модель.
   LlmModelConfig? get selectedModel => _selectedModel;
+
+  /// Список сообщений чата.
   List<AiChatMessageEntity> get messages => List.unmodifiable(_messages);
+
+  /// Текущее состояние чата.
   AiChatState get state => _state;
+
+  /// Последняя ошибка.
   String? get lastError => _lastError;
+
+  /// Менеджер модели.
   LlmModelManager? get modelManager => _modelManager;
+
+  /// Готова ли модель к использованию.
   bool get isModelReady => _modelManager?.isReady ?? false;
+
+  /// Прогресс скачивания (0.0 - 1.0).
   double get downloadProgress => downloadProgressNotifier.value;
 
   @override
@@ -98,50 +136,6 @@ final class AiChatScreenModel extends ElementaryModel {
     } on Exception catch (e, stackTrace) {
       handleError(e, stackTrace: stackTrace);
     }
-  }
-
-  /// Загрузка выбранной модели.
-  Future<void> _loadModel(LlmModelConfig model) async {
-    if (_state == AiChatState.loading) return;
-
-    _state = AiChatState.loading;
-    stateNotifier.value = _state;
-
-    try {
-      _modelManager = LlmModelManager(selectedModel: model);
-      modelManagerNotifier.value = _modelManager;
-      final result = await _modelManager!.initialize();
-
-      if (result.success) {
-        _state = AiChatState.idle;
-        _lastError = null;
-      } else {
-        _state = AiChatState.idle;
-        _lastError = result.errorMessage ?? 'Неизвестная ошибка';
-      }
-    } on Exception catch (e, stackTrace) {
-      _state = AiChatState.idle;
-      _lastError = _formatNativeError(e);
-      handleError(e, stackTrace: stackTrace);
-    } finally {
-      stateNotifier.value = _state;
-      lastErrorNotifier.value = _lastError;
-    }
-  }
-
-  /// Форматирование ошибки native библиотеки.
-  String _formatNativeError(Exception e) {
-    final errorStr = e.toString().toLowerCase();
-    if (errorStr.contains('native') ||
-        errorStr.contains('llm_bridge') ||
-        errorStr.contains('ffi')) {
-      return 'Native library error: LLM bridge not compiled or incompatible. '
-          'Check if llama.cpp submodule is initialized and built.';
-    }
-    if (errorStr.contains('gguf') || errorStr.contains('model')) {
-      return 'Model file format error. Try re-downloading the model.';
-    }
-    return e.toString();
   }
 
   /// Скачать и загрузить модель.
@@ -249,7 +243,8 @@ final class AiChatScreenModel extends ElementaryModel {
 
   /// Построение промпта.
   String _buildPrompt(String userText) {
-    return '''Ты — полезный ассистент для управления задачами.
+    return '''
+Ты — полезный ассистент для управления задачами.
 Ответь кратко и по делу.
 
 Пользователь: $userText

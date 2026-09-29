@@ -3,14 +3,12 @@ import 'package:rooster/features/profile/domain/entities/profile_team_card_entit
 import 'package:rooster/features/profile/presentation/screens/profile/profile_wm.dart';
 import 'package:rooster/features/profile/presentation/strings/profile_strings.dart';
 import 'package:rooster/features/profile/presentation/widgets/profile_team_card.dart';
-import 'package:rooster/uikit/colors/app_color_scheme.dart';
 import 'package:rooster/uikit/layout_helpers/height.dart';
 import 'package:rooster/uikit/sizes/app_sizes.dart';
-import 'package:rooster/uikit/text/app_text_scheme.dart';
 
-/// Блок команд Appwrite на экране профиля.
+/// Секция команд на экране профиля.
 class ProfileTeamsSection extends StatelessWidget {
-  /// Создаёт виджет.
+  /// Создаёт секцию команд.
   const ProfileTeamsSection({required this.widgetModel, super.key});
 
   /// Widget model профиля.
@@ -21,71 +19,68 @@ class ProfileTeamsSection extends StatelessWidget {
     if (!widgetModel.showsTeamsSection) {
       return const SizedBox.shrink();
     }
-    final colorScheme = AppColorScheme.of(context);
-    final textScheme = AppTextScheme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        const Height(AppSizes.double24),
+        const Height(AppSizes.double16),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Text(
               ProfileStrings.teamsSectionTitle(context),
-              style: textScheme.body.t20Bold,
-            ),
-            InkWell(
-              onTap: widgetModel.onCreateTeamPressed,
-              child: CircleAvatar(
-                backgroundColor: colorScheme.primaryNormal,
-                radius: AppSizes.double16,
-                child: const Center(
-                  child: Icon(Icons.add),
-                ),
+              style: const TextStyle(
+                fontSize: AppSizes.double18,
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            const Spacer(),
+            ValueListenableBuilder<bool>(
+              valueListenable: widgetModel.teamsLoadingNotifier,
+              builder: (context, loading, _) {
+                if (loading) {
+                  return const SizedBox(
+                    width: AppSizes.double20,
+                    height: AppSizes.double20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  );
+                }
+                return IconButton(
+                  icon: const Icon(Icons.add, size: AppSizes.double20),
+                  onPressed: widgetModel.onCreateTeamPressed,
+                  tooltip: ProfileStrings.teamsCreateDialogTitle(context),
+                );
+              },
             ),
           ],
         ),
-        const Height(AppSizes.double12),
-        ValueListenableBuilder<bool>(
-          valueListenable: widgetModel.teamsLoadingNotifier,
-          builder: (context, isLoading, _) {
-            return ValueListenableBuilder<List<ProfileTeamCardEntity>>(
-              valueListenable: widgetModel.teamsNotifier,
-              builder: (context, teams, _) {
-                if (isLoading && teams.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: AppSizes.double16,
-                      ),
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-                if (teams.isEmpty) {
-                  return Text(
+        const Height(AppSizes.double8),
+        ValueListenableBuilder<List<ProfileTeamCardEntity>>(
+          valueListenable: widgetModel.teamsNotifier,
+          builder: (context, teams, _) {
+            if (teams.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSizes.double16),
+                child: Center(
+                  child: Text(
                     ProfileStrings.teamsEmpty(context),
-                    style: textScheme.body.t14.copyWith(
-                      color: colorScheme.gray600,
-                    ),
-                  );
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    for (final ProfileTeamCardEntity team in teams)
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: AppSizes.double12,
-                        ),
-                        child: ProfileTeamCard(
-                          team: team,
-                          onLeave: () => widgetModel.onLeaveTeamPressed(team),
-                          widgetModel: widgetModel,
-                        ),
-                      ),
-                  ],
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ),
+              );
+            }
+
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: teams.length,
+              separatorBuilder: (_, __) => const Height(AppSizes.double8),
+              itemBuilder: (context, index) {
+                final team = teams[index];
+                return ProfileTeamCard(
+                  team: team,
+                  onInvitePressed: widgetModel.onInviteToTeamPressed,
+                  onLeavePressed: () => widgetModel.onLeaveTeamPressed(team),
+                  memberLineFormatter: widgetModel.teamMemberLine,
                 );
               },
             );

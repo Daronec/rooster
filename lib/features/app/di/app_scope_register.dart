@@ -5,20 +5,18 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:rooster/common/utils/logger/log_writer.dart';
 import 'package:rooster/config/app_config.dart';
-import 'package:rooster/config/appwrite_env_config.dart';
 import 'package:rooster/config/environment/environment.dart';
-import 'package:rooster/core/analytics/i_app_analytics_gateway.dart';
 import 'package:rooster/core/sync/sync_manager_impl.dart';
 import 'package:rooster/core/sync/sync_manager_ref.dart';
 import 'package:rooster/features/ai/data/local_llm_gateway_impl.dart';
 import 'package:rooster/features/ai/domain/gateways/i_local_llm_gateway.dart';
 import 'package:rooster/features/app/di/app_scope.dart';
 import 'package:rooster/features/auth/di/auth_backend_assembler.dart';
-import 'package:rooster/features/auth/di/auth_backend_assembly_context.dart';
-import 'package:rooster/features/auth/data/google_play_services_status_gateway_impl.dart';
-import 'package:rooster/features/auth/data/huawei_device_profile_gateway_impl.dart';
 import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
+import 'package:rooster/features/cloud_ru/sync/cloud_ru_sync_remote_executor.dart';
 import 'package:rooster/features/planning/data/repositories/planning_repository_impl.dart';
+import 'package:rooster/features/profile/data/noop_profile_avatar_gateway_impl.dart';
+import 'package:rooster/features/profile/data/noop_profile_personal_data_gateway_impl.dart';
 import 'package:rooster/features/tasks/data/gateways/task_local_image_gateway_io.dart';
 import 'package:rooster/features/tasks/data/gateways/task_local_image_gateway_stub.dart';
 import 'package:rooster/features/tasks/data/gateways/auth_task_change_author_provider.dart';
@@ -39,9 +37,7 @@ import 'package:rooster/features/tasks/domain/use_cases/resolve_task_feasibility
 import 'package:rooster/features/tasks/data/storage/tasks_screen_expanded_group_storage_impl.dart';
 import 'package:rooster/features/tasks/domain/entities/task_list_entity.dart';
 import 'package:rooster/features/tasks/domain/task_ids.dart';
-import 'package:rooster/integration/analytics/huawei_app_analytics_gateway_impl.dart';
 
-import 'package:rooster/integration/hms/hms_bootstrap.dart';
 import 'package:rooster/integration/network/connectivity_gateway.dart';
 import 'package:rooster/persistence/storage/pin_code_storage/pin_code_storage_impl.dart';
 import 'package:rooster/persistence/storage/sync_queue_storage/sync_queue_hive_storage.dart';
@@ -68,35 +64,6 @@ final class AppScopeRegister {
     });
     final logger = LogWriter(surfLogger);
 
-    final gmsGateway = GooglePlayServicesStatusGatewayImpl();
-    final huaweiProfileGateway = HuaweiDeviceProfileGatewayImpl();
-    final huaweiHostProfile = await huaweiProfileGateway.loadProfile();
-    final googlePlayServicesUsable = await gmsGateway
-        .areUsableForFirebaseClients();
-    final accountKitRuntimeSupported = huaweiHostProfile.isAndroidHost;
-    final isHuaweiHmsBranch =
-        huaweiHostProfile.isAndroidHost &&
-        !googlePlayServicesUsable &&
-        huaweiHostProfile.isLikelyHuaweiOrHonorDevice &&
-        accountKitRuntimeSupported;
-
-    if (isHuaweiHmsBranch) {
-      await HmsBootstrap.initialize(logger);
-    }
-
-    final appwriteEnv = AppwriteEnvConfig.fromDotenv();
-    final authBackendStrategy = resolveAuthBackendStrategy(
-      appwriteClientConfigured: appwriteEnv.isClientConfigured,
-    );
-    logger.log('auth_backend_strategy=${authBackendStrategy.name}');
-    if (kDebugMode) {
-      logger.log(
-        'auth_probe gms=$googlePlayServicesUsable '
-        'huaweiHost=${huaweiHostProfile.isLikelyHuaweiOrHonorDevice} '
-        'hms_branch=$isHuaweiHmsBranch',
-      );
-    }
-
     final tasksBox = await Hive.openBox<dynamic>('tasks_v1');
     final listsBox = await Hive.openBox<dynamic>('task_lists_v1');
     final planningBox = await Hive.openBox<dynamic>('planning_v1');
@@ -120,11 +87,6 @@ final class AppScopeRegister {
       logger: logger,
     );
 
-    IAppAnalyticsGateway? productAnalytics;
-    if (isHuaweiHmsBranch) {
-      productAnalytics = HuaweiAppAnalyticsGatewayImpl();
-      unawaited(productAnalytics.logAppOpen());
-    }
 
     final taskChangeHistoryRepository = TaskChangeHistoryRepositoryImpl(
       changesBox: taskChangesBox,
@@ -134,7 +96,6 @@ final class AppScopeRegister {
       syncQueue: syncQueueStorage,
       syncManagerRef: syncManagerRef,
       uuid: uuid,
-      analytics: productAnalytics,
       dueReminderGateway: dueReminderGateway,
       taskChangeHistoryWriter: taskChangeHistoryRepository,
       taskChangeAuthorProvider: taskChangeAuthorProviderRef,
@@ -193,35 +154,31 @@ final class AppScopeRegister {
     const tokenStorage = TokenStorageImpl(secureStorage);
     const pinCodeStorage = PinCodeStorageImpl(secureStorage);
 
-    final authAssemblyContext = AuthBackendAssemblyContext(
-      authBackendStrategy: authBackendStrategy,
-      appwriteEnv: appwriteEnv,
-      logger: logger,
-      tokenStorage: tokenStorage,
-      secureStorage: secureStorage,
+    final authAssembly = await assembleAuthBackend(
       sharedPreferences: sharedPreferences,
-      loadTaskById: tasksRepoImpl.loadTaskById,
-      loadListById: listsRepoImpl.loadListById,
-      loadPlanById: planningRepoImpl.loadPlanById,
-      loadMaterialStockSnapshot: materialStockRepoImpl.loadStockSnapshot,
-      tasksRepository: tasksRepoImpl,
-      taskListsRepository: listsRepoImpl,
-      planningRepository: planningRepoImpl,
-      materialStockRepository: materialStockRepoImpl,
+      secureStorage: secureStorage,
+      logger: logger,
+      serverlessEndpoint: env.serverlessEndpoint,
+      storageEndpoint: env.storageEndpoint,
+      tokenExchangeEndpoint: env.tokenExchangeEndpoint,
     );
-    final authAssembly = await assembleAuthBackend(authAssemblyContext);
     taskChangeAuthorProviderRef.target = AuthTaskChangeAuthorProvider(
       authGateway: authAssembly.authGateway,
     );
 
+    final cloudRuSyncRemoteExecutor = CloudRuSyncRemoteExecutor(
+      cloudRuSyncExecutor: authAssembly.cloudRuSyncExecutor,
+      cloudRuClient: authAssembly.cloudRuClient,
+      logger: logger,
+    );
+
     final syncManager = SyncManagerImpl(
       syncQueue: syncQueueStorage,
-      remoteExecutor: authAssembly.remoteExecutor,
+      remoteExecutor: cloudRuSyncRemoteExecutor,
       connectivity: connectivity,
       logger: logger,
     );
     syncManagerRef.target = syncManager;
-    authAssembly.bindInboundCloudSync?.call(syncManager, connectivity);
 
     if (listsBox.isEmpty) {
       final now = DateTime.now().millisecondsSinceEpoch;
@@ -249,10 +206,6 @@ final class AppScopeRegister {
       localLLMGateway = null;
     }
 
-    final isLikelyHuaweiOrHonorAndroidForAuthUi =
-        huaweiHostProfile.isAndroidHost &&
-        huaweiHostProfile.isLikelyHuaweiOrHonorDevice;
-
     return AppScope(
       env: env,
       appConfig: appConfig,
@@ -261,13 +214,12 @@ final class AppScopeRegister {
       localNotificationsPlugin: localNotificationsPlugin,
       tokenStorage: tokenStorage,
       pinCodeStorage: pinCodeStorage,
-      authBackendStrategy: authBackendStrategy,
-      isLikelyHuaweiOrHonorAndroidForAuthUi:
-          isLikelyHuaweiOrHonorAndroidForAuthUi,
+      authBackendStrategy: AuthBackendStrategy.sberId,
+      isLikelyHuaweiOrHonorAndroidForAuthUi: false,
       authGateway: authAssembly.authGateway,
       sberIdGateway: authAssembly.sberIdGateway,
-      profileAvatarGateway: authAssembly.profileAvatarGateway,
-      profilePersonalDataGateway: authAssembly.profilePersonalDataGateway,
+      profileAvatarGateway: const NoopProfileAvatarGatewayImpl(),
+      profilePersonalDataGateway: const NoopProfilePersonalDataGatewayImpl(),
       teamsGateway: authAssembly.teamsGateway,
       tasksRepository: tasksRepoImpl,
       taskListsRepository: listsRepoImpl,

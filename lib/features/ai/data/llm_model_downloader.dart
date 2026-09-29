@@ -1,5 +1,4 @@
 import 'dart:io' as io;
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -175,7 +174,7 @@ final class LlmModelDownloader {
 
       // Verify GGUF magic number
       debugPrint('[LlmModelDownloader] Verifying GGUF magic number...');
-      final fileHandle = file.openSync(mode: FileMode.read);
+      final fileHandle = file.openSync();
       final magicBytes = fileHandle.readSync(4);
       fileHandle.closeSync();
 
@@ -268,7 +267,7 @@ final class LlmModelDownloader {
   }) async {
     final path = await getModelFilePath(modelName: modelName);
     final file = io.File(path);
-    if (await file.exists()) {
+    if (file.existsSync()) {
       await file.delete();
     }
     return true;

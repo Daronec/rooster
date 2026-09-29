@@ -75,5 +75,3 @@ final class TasksGroupedListGroupTile extends StatelessWidget {
     );
   }
 }
-
-
