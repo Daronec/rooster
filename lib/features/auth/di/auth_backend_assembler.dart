@@ -1,43 +1,41 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:rooster/common/utils/logger/i_log_writer.dart';
-import 'package:rooster/features/auth/data/sber_id_auth_gateway_impl.dart';
+import 'package:rooster/features/auth/data/vk_id_auth_gateway_impl.dart';
+import 'package:rooster/features/auth/data/yandex_id_auth_gateway_impl.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
-import 'package:rooster/features/auth/domain/gateways/i_sber_id_gateway.dart';
-import 'package:rooster/features/cloud_ru/api/cloud_ru_client.dart';
-import 'package:rooster/features/cloud_ru/auth/cloud_ru_auth_service.dart';
-import 'package:rooster/features/cloud_ru/sync/cloud_ru_sync_executor.dart';
-import 'package:rooster/features/profile/data/teams_gateway_impl.dart';
+import 'package:rooster/features/auth/domain/gateways/i_vk_id_gateway.dart';
+import 'package:rooster/features/auth/domain/gateways/i_yandex_id_gateway.dart';
+import 'package:rooster/features/profile/domain/entities/profile_team_card_entity.dart';
 import 'package:rooster/features/profile/domain/gateways/i_teams_gateway.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Результат сборки auth-бэкенда.
+/// Assembly result for VK ID / Yandex ID auth backends.
 class AuthBackendAssemblyResult {
-  /// Создаёт результат.
+  /// Creates the assembly result.
   AuthBackendAssemblyResult({
     required this.authGateway,
-    required this.sberIdGateway,
-    required this.cloudRuClient,
-    required this.cloudRuSyncExecutor,
+    required this.vkIdGateway,
+    required this.yandexIdGateway,
     required this.teamsGateway,
   });
 
-  /// Шлюз авторизации.
+  /// Primary auth gateway (VK ID by default).
   final IAuthGateway authGateway;
 
-  /// Шлюз Sber ID.
-  final ISberIdGateway sberIdGateway;
+  /// VK ID gateway for direct access.
+  final IVkIdGateway vkIdGateway;
 
-  /// Клиент cloud.ru.
-  final CloudRuClient cloudRuClient;
+  /// Yandex ID gateway for direct access.
+  final IYandexIdGateway yandexIdGateway;
 
-  /// Executor синхронизации с cloud.ru.
-  final CloudRuSyncExecutor cloudRuSyncExecutor;
-
-  /// Шлюз команд.
+  /// Teams gateway for profile/teams operations.
   final ITeamsGateway teamsGateway;
 }
 
-/// Собирает auth-бэкенд для Sber ID + cloud.ru.
+/// Assembles auth backends for VK ID and Yandex ID.
+///
+/// Creates gateway instances and a teams gateway.
+/// The primary [IAuthGateway] is the VK ID gateway.
 Future<AuthBackendAssemblyResult> assembleAuthBackend({
   required SharedPreferences sharedPreferences,
   required FlutterSecureStorage secureStorage,
@@ -46,44 +44,53 @@ Future<AuthBackendAssemblyResult> assembleAuthBackend({
   required String storageEndpoint,
   required String tokenExchangeEndpoint,
 }) async {
-  // Создаём cloud.ru сервисы
-  final cloudRuAuthService = CloudRuAuthService(
-    tokenExchangeEndpoint: tokenExchangeEndpoint,
+  final vkIdGateway = VkIdAuthGatewayImpl(
     logger: logger,
     secureStorage: secureStorage,
   );
-
-  final cloudRuClient = CloudRuClient(
-    serverlessEndpoint: serverlessEndpoint,
-    storageEndpoint: storageEndpoint,
-    iamToken: cloudRuAuthService.iamToken,
+  final yandexIdGateway = YandexIdAuthGatewayImpl(
     logger: logger,
+    secureStorage: secureStorage,
   );
-
-  // Создаём Sber ID gateway
-  final sberIdGateway = SberIdAuthGatewayImpl(
-    cloudRuAuthService: cloudRuAuthService,
-    cloudRuClient: cloudRuClient,
-    logger: logger,
-  );
-
-  // Создаём sync executor
-  final cloudRuSyncExecutor = CloudRuSyncExecutor(
-    cloudRuClient: cloudRuClient,
-    logger: logger,
-  );
-
-  // Создаём teams gateway
-  final teamsGateway = TeamsGatewayImpl(
-    cloudRuClient: cloudRuClient,
-    logger: logger,
-  );
-
+  // Teams gateway is a stub for now — replace with real implementation.
+  const teamsGateway = NoopTeamsGateway();
   return AuthBackendAssemblyResult(
-    authGateway: sberIdGateway,
-    sberIdGateway: sberIdGateway,
-    cloudRuClient: cloudRuClient,
-    cloudRuSyncExecutor: cloudRuSyncExecutor,
+    authGateway: vkIdGateway,
+    vkIdGateway: vkIdGateway,
+    yandexIdGateway: yandexIdGateway,
     teamsGateway: teamsGateway,
   );
+}
+
+/// Noop teams gateway — placeholder until real implementation is ready.
+final class NoopTeamsGateway implements ITeamsGateway {
+  /// Creates the noop teams gateway.
+  const NoopTeamsGateway();
+
+  @override
+  Future<List<ProfileTeamCardEntity>> loadTeamsWithMembers(
+    String userId,
+  ) async => [];
+
+  @override
+  Future<void> createTeam({
+    required String name,
+    required String currentUserId,
+  }) async {}
+
+  @override
+  Future<void> inviteByEmail({
+    required String teamId,
+    required String email,
+    required String invitationReturnUrl,
+  }) async {}
+
+  @override
+  Future<void> leaveTeam({
+    required String teamId,
+    required String membershipId,
+  }) async {}
+
+  @override
+  String get teamInvitationReturnUrl => '';
 }

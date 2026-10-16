@@ -3,6 +3,7 @@ allprojects {
         google()
         mavenCentral()
         maven(url = "https://developer.huawei.com/repo/")
+        maven(url = "https://artifactory-external.vkpartner.ru/artifactory/vkid-sdk-andorid/")
     }
 }
 

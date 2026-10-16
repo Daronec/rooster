@@ -10,6 +10,13 @@ analyzer:
     - lib/gen/**
     - lib/assets/**
     - tools/bricks/**/__brick__/**
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
   errors:
     # Проект не переводит весь lib на 80 колонок; правило остаётся в very_good для новых файлов.
     lines_longer_than_80_chars: ignore

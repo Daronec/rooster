@@ -9,13 +9,14 @@ import 'package:rooster/core/architecture/presentation/base_widget_model.dart';
 import 'package:rooster/features/app/di/app_scope.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
-import 'package:rooster/features/auth/domain/gateways/i_sber_id_gateway.dart';
+import 'package:rooster/features/auth/domain/gateways/i_vk_id_gateway.dart';
+import 'package:rooster/features/auth/domain/gateways/i_yandex_id_gateway.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_model.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_screen.dart';
 import 'package:rooster/features/navigation/root_main_app_route.dart'
     show rootMainAppStackOpenProfileRoutes;
 
-/// WidgetModel экрана авторизации (Sber ID).
+/// WidgetModel экрана авторизации (VK ID / Yandex ID).
 class AuthScreenWidgetModel
     extends BaseWidgetModel<AuthScreen, AuthScreenModel> {
   /// Создаёт widget model.
@@ -26,12 +27,14 @@ class AuthScreenWidgetModel
 
   StreamSubscription<AppAuthUserEntity?>? _authSub;
 
-  /// Gateway для входа через Sber ID.
-  ISberIdGateway get sberIdGateway =>
-      context.read<IAppScope>().sberIdGateway;
+  /// Gateway для входа через VK ID (через model).
+  IVkIdGateway get vkIdGateway => model.vkIdGateway;
 
-  /// Основной шлюз авторизации.
-  IAuthGateway get authGateway => context.read<IAppScope>().authGateway;
+  /// Gateway для входа через Yandex ID (через model).
+  IYandexIdGateway get yandexIdGateway => model.yandexIdGateway;
+
+  /// Основной шлюз авторизации (через model).
+  IAuthGateway get authGateway => model.authGateway;
 
   /// Текст вступления под выбранную стратегию авторизации.
   String get introTranslationKey => model.introTranslationKey;
@@ -55,13 +58,25 @@ class AuthScreenWidgetModel
     super.dispose();
   }
 
-  /// Вход через Sber ID.
-  Future<void> onSberIdTap() async {
+  /// Вход через VK ID.
+  Future<void> onVkIdTap() async {
     try {
-      await sberIdGateway.signInWithSberId();
+      await vkIdGateway.signInWithVkId();
     } on Exception {
       snackController.addSnack(
-        FlutterI18n.translate(context, 'auth.sberSignInFailed'),
+        FlutterI18n.translate(context, 'auth.vkSignInFailed'),
+        messageType: SnackMessageType.error,
+      );
+    }
+  }
+
+  /// Вход через Yandex ID.
+  Future<void> onYandexIdTap() async {
+    try {
+      await yandexIdGateway.signInWithYandexId();
+    } on Exception {
+      snackController.addSnack(
+        FlutterI18n.translate(context, 'auth.yandexSignInFailed'),
         messageType: SnackMessageType.error,
       );
     }

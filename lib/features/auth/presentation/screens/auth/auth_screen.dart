@@ -25,9 +25,12 @@ class AuthScreen extends BaseWidget<AuthScreenWidgetModel> {
 /// Фабрика WM.
 AuthScreenWidgetModel authScreenWidgetModelFactory(BuildContext context) {
   final snack = SnackQueueProvider.of(context);
+  final appScope = context.read<IAppScope>();
   return AuthScreenWidgetModel(
     AuthScreenModel(
-      authGateway: context.read<IAppScope>().authGateway,
+      authGateway: appScope.authGateway,
+      vkIdGateway: appScope.vkIdGateway,
+      yandexIdGateway: appScope.yandexIdGateway,
     ),
     snackController: snack,
   );

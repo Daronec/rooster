@@ -1,12 +1,18 @@
-/// Единственная стратегия авторизации: Sber ID через cloud.ru.
+/// Auth strategy selection for social OAuth providers.
 enum AuthBackendStrategy {
-  /// Sber ID + cloud.ru (Yandex Serverless Functions).
-  sberId,
+  /// VK ID OAuth.
+  vkId,
+
+  /// Yandex ID OAuth.
+  yandexId,
 }
 
-/// Всегда возвращает [AuthBackendStrategy.sberId].
+/// Resolves the active auth backend strategy.
+///
+/// [appwriteClientConfigured] is kept for backward compatibility.
 AuthBackendStrategy resolveAuthBackendStrategy({
   required bool appwriteClientConfigured,
 }) {
-  return AuthBackendStrategy.sberId;
+  // Default to VK ID as primary auth provider.
+  return AuthBackendStrategy.vkId;
 }

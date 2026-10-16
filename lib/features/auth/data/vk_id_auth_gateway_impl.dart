@@ -7,19 +7,13 @@ import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart'
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
 import 'package:rooster/features/auth/domain/gateways/i_vk_id_gateway.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:vkid_flutter_sdk/library_vkid.dart';
 
 /// Implementation of [IVkIdGateway] and [IAuthGateway] for VK ID OAuth.
-///
-/// Flow:
-/// 1. User clicks "Sign in with VK ID"
-/// 2. VK ID OAuth2 flow starts (native app or browser)
-/// 3. Get authorization tokens
-/// 4. Save tokens to secure storage
-/// 5. Build user entity from VK profile data
-/// 6. Emit user to authStateChanges stream
 final class VkIdAuthGatewayImpl
     with ChangeNotifier
     implements IVkIdGateway, IAuthGateway {
+  /// Creates the VK ID auth gateway.
   VkIdAuthGatewayImpl({
     required ILogWriter logger,
     FlutterSecureStorage? secureStorage,
@@ -53,26 +47,48 @@ final class VkIdAuthGatewayImpl
 
   @override
   Future<void> signInWithVkId() async {
+    final completer = Completer<AuthData>();
+
     try {
       _logger.log('vk_id_auth_start');
       debugPrint('VkIdAuthGatewayImpl: starting VK ID OAuth...');
 
-      // TODO: Integrate with vkid_flutter_sdk for actual OAuth flow.
-      // Example flow (requires vkid_flutter_sdk):
-      //
-      //   final vkid = await VKID.getInstance();
-      //   final authData = await vkid.authorize(
-      //     params: AuthParamsBuilder().build(),
-      //     onAuth: (authData) => authData,
-      //   );
-      //
-      // For now, simulate a successful sign-in with test data.
-      // Replace this block with real SDK integration.
+      final vkid = await VKID.getInstance();
 
-      await _simulateVkOAuthFlow();
+      vkid.authorize(
+        params: AuthParamsBuilder().build(),
+        onAuth: (authData) {
+          debugPrint(
+            'VkIdAuthGatewayImpl: VK ID auth success user=${authData.userID}',
+          );
+          _logger.log('vk_id_auth_success user=${authData.userID}');
+          if (!completer.isCompleted) {
+            completer.complete(authData);
+          }
+        },
+        onError: (error) {
+          debugPrint('VkIdAuthGatewayImpl: VK ID auth error: $error');
+          _logger.log('vk_id_auth_error: $error');
+          if (!completer.isCompleted) {
+            if (error is AuthCancelledError) {
+              completer.completeError(const _VkAuthCancelledException());
+            } else if (error is AuthOtherError) {
+              completer.completeError(StateError(error.description));
+            } else {
+              completer.completeError(
+                StateError('VK ID authorization failed: $error'),
+              );
+            }
+          }
+        },
+      );
 
-      _logger.log('vk_id_auth_complete');
-      debugPrint('VkIdAuthGatewayImpl: VK ID OAuth complete');
+      final authData = await completer.future;
+      await _handleVkAuthSuccess(authData);
+    } on _VkAuthCancelledException {
+      rethrow;
+    } on StateError {
+      rethrow;
     } on Exception catch (e) {
       _logger.log('vk_id_auth_error: $e');
       debugPrint('VkIdAuthGatewayImpl: VK ID OAuth error: $e');
@@ -85,6 +101,7 @@ final class VkIdAuthGatewayImpl
     try {
       _logger.log('vk_id_auth_signout');
       await _clearStoredTokens();
+      await _logoutFromVkId();
       _subject.add(null);
       _currentUser = null;
       notifyListeners();
@@ -115,8 +132,8 @@ final class VkIdAuthGatewayImpl
 
       _currentUser = AppAuthUserEntity(
         uid: userId,
-        email: email.isNotEmpty ? email : null,
-        displayName: name.isNotEmpty ? name : null,
+        email: (email ?? '').isNotEmpty ? email : null,
+        displayName: (name ?? '').isNotEmpty ? name : null,
         isAnonymous: false,
       );
       _subject.add(_currentUser);
@@ -126,6 +143,38 @@ final class VkIdAuthGatewayImpl
       _logger.log('vk_id_auth_session_restore_error: $e');
       debugPrint('VkIdAuthGatewayImpl: session restore error: $e');
     }
+  }
+
+  /// Handle successful VK ID auth and save session.
+  Future<void> _handleVkAuthSuccess(AuthData authData) async {
+    final userId = authData.userID.toString();
+    final userData = authData.userData;
+    final email = userData.email.isNotEmpty ? userData.email : null;
+    final firstName = userData.firstName.isNotEmpty ? userData.firstName : null;
+    final lastName = userData.lastName.isNotEmpty ? userData.lastName : null;
+    final displayName = [firstName, lastName]
+            .where((n) => n != null && n.isNotEmpty)
+            .cast<String>()
+            .join(' ')
+            .trim()
+          .isEmpty
+        ? null
+        : [firstName, lastName]
+            .where((n) => n != null && n.isNotEmpty)
+            .cast<String>()
+            .join(' ')
+            .trim();
+
+    await _saveUserSession(
+      userId: userId,
+      email: email,
+      displayName: displayName,
+      accessToken: authData.token,
+      idToken: authData.idToken,
+    );
+
+    _logger.log('vk_id_auth_session_saved_ok user=$userId');
+    debugPrint('VkIdAuthGatewayImpl: session saved for user $userId');
   }
 
   /// Save user data to secure storage after successful OAuth.
@@ -151,8 +200,8 @@ final class VkIdAuthGatewayImpl
 
       _currentUser = AppAuthUserEntity(
         uid: userId,
-        email: email.isNotEmpty ? email : null,
-        displayName: displayName.isNotEmpty ? displayName : null,
+        email: (email ?? '').isNotEmpty ? email : null,
+        displayName: (displayName ?? '').isNotEmpty ? displayName : null,
         isAnonymous: false,
       );
       _subject.add(_currentUser);
@@ -176,28 +225,22 @@ final class VkIdAuthGatewayImpl
     }
   }
 
-  /// Simulated OAuth flow — replace with real vkid_flutter_sdk integration.
-  Future<void> _simulateVkOAuthFlow() async {
-    // In production, this would call:
-    //   final vkid = await VKID.getInstance();
-    //   final authData = await vkid.authorize(...);
-    //
-    // For now, we simulate the result:
-    await Future.delayed(const Duration(seconds: 1));
-
-    // Simulated VK user data
-    const mockUserId = 'mock_vk_user_12345';
-    const mockEmail = 'user@example.com';
-    const mockName = 'Test User';
-    const mockAccessToken = 'mock_vk_access_token';
-    const mockIdToken = 'mock_vk_id_token';
-
-    await _saveUserSession(
-      userId: mockUserId,
-      email: mockEmail,
-      displayName: mockName,
-      accessToken: mockAccessToken,
-      idToken: mockIdToken,
-    );
+  /// Logout from VK ID.
+  Future<void> _logoutFromVkId() async {
+    try {
+      final vkid = await VKID.getInstance();
+      vkid.logout();
+      debugPrint('VkIdAuthGatewayImpl: VK ID logout done');
+    } on Exception catch (e) {
+      _logger.log('vk_id_logout_error: $e');
+    }
   }
+}
+
+/// Exception thrown when VK ID auth is cancelled by user.
+final class _VkAuthCancelledException implements Exception {
+  const _VkAuthCancelledException();
+
+  @override
+  String toString() => 'VK ID authorization cancelled by user';
 }

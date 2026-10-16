@@ -92,6 +92,11 @@
     "providerSber": "Сбер ID",
     "sberSignInFailed": "Не удалось войти через Сбер ID",
     "sberIdUnavailable": "Сбер ID недоступен на этом устройстве",
+    "providerVk": "VK ID",
+    "vkSignInFailed": "Не удалось войти через VK ID",
+    "providerYandex": "Yandex ID",
+    "yandexSignInFailed": "Не удалось войти через Yandex ID",
+    "sberIdUnavailable": "Сбер ID недоступен на этом устройстве",
     "userCancelled": "Вход отменён"
   },
   "profile": {

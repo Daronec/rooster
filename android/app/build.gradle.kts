@@ -59,9 +59,14 @@ android {
             }
         manifestPlaceholders["HUAWEI_APP_ID"] = huaweiAppId
 
-        // Sber ID Client ID — настройте в local.properties (sber.client.id=...)
-        val sberClientId = readSberClientIdFromLocalProperties(rootProject.layout.projectDirectory.asFile)
-        manifestPlaceholders["SBER_CLIENT_ID"] = sberClientId
+        // VK ID Client ID — настройте в local.properties (vk.client.id=...)
+        val vkClientId = readVkClientIdFromLocalProperties(rootProject.layout.projectDirectory.asFile)
+        manifestPlaceholders["VKID_CLIENT_ID"] = vkClientId
+
+        // Yandex Client ID — настройте в local.properties (yandex.client.id=...)
+        val yandexClientId = readYandexClientIdFromLocalProperties(rootProject.layout.projectDirectory.asFile)
+        manifestPlaceholders["YANDEX_CLIENT_ID"] = yandexClientId
+        manifestPlaceholders["YANDEX_OAUTH_HOST"] = "oauth.yandex.ru"
 
         if (huaweiAppId.isEmpty()) {
             project.logger.lifecycle(
@@ -196,6 +201,48 @@ private fun extractHuaweiAppIdFromAgConnectJson(jsonText: String): String {
         ?.get(1)
         ?.trim()
         .orEmpty()
+}
+
+/** Резерв: `vk.client.id=...` в [android/local.properties]. */
+private fun readVkClientIdFromLocalProperties(androidRootDir: File): String {
+    val localProps = File(androidRootDir, "local.properties")
+    if (!localProps.isFile) {
+        return "YOUR_VK_CLIENT_ID"
+    }
+    return try {
+        localProps
+            .readLines()
+            .map { line -> line.trim() }
+            .firstOrNull { line -> line.startsWith("vk.client.id=") }
+            ?.substringAfter("=", "")
+            ?.trim()
+            .orEmpty()
+            .takeIf { it.isNotEmpty() }
+            ?: "YOUR_VK_CLIENT_ID"
+    } catch (_: Exception) {
+        "YOUR_VK_CLIENT_ID"
+    }
+}
+
+/** Резерв: `yandex.client.id=...` в [android/local.properties]. */
+private fun readYandexClientIdFromLocalProperties(androidRootDir: File): String {
+    val localProps = File(androidRootDir, "local.properties")
+    if (!localProps.isFile) {
+        return "YOUR_YANDEX_CLIENT_ID"
+    }
+    return try {
+        localProps
+            .readLines()
+            .map { line -> line.trim() }
+            .firstOrNull { line -> line.startsWith("yandex.client.id=") }
+            ?.substringAfter("=", "")
+            ?.trim()
+            .orEmpty()
+            .takeIf { it.isNotEmpty() }
+            ?: "YOUR_YANDEX_CLIENT_ID"
+    } catch (_: Exception) {
+        "YOUR_YANDEX_CLIENT_ID"
+    }
 }
 
 /** Резерв: `sber.client.id=...` в [android/local.properties] (файл обычно не в git). */

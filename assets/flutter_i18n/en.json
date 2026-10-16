@@ -99,6 +99,11 @@
     "providerSber": "Sber ID",
     "sberSignInFailed": "Failed to sign in with Sber ID",
     "sberIdUnavailable": "Sber ID is not available on this device",
+    "providerVk": "VK ID",
+    "vkSignInFailed": "Failed to sign in with VK ID",
+    "providerYandex": "Yandex ID",
+    "yandexSignInFailed": "Failed to sign in with Yandex ID",
+    "sberIdUnavailable": "Sber ID is not available on this device",
     "userCancelled": "Sign-in cancelled"
   },
   "profile": {

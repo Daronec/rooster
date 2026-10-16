@@ -1,0 +1,47 @@
+PODS:
+  - AGConnectCore (1.9.4.300):
+    - HMFoundation (~> 1.4)
+  - AGConnectCredential (1.9.4.300):
+    - AGConnectCore (~> 1.4)
+  - Flutter (1.0.0)
+  - HiAnalytics (6.7.0.300):
+    - AGConnectCredential
+  - HMFoundation (1.9.4.300)
+  - "huawei_analytics (6.5.0+301)":
+    - Flutter
+    - HiAnalytics (= 6.7.0.300)
+  - sign_in_with_apple (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - huawei_analytics (from `.symlinks/plugins/huawei_analytics/ios`)
+  - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
+
+SPEC REPOS:
+  trunk:
+    - AGConnectCore
+    - AGConnectCredential
+    - HiAnalytics
+    - HMFoundation
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  huawei_analytics:
+    :path: ".symlinks/plugins/huawei_analytics/ios"
+  sign_in_with_apple:
+    :path: ".symlinks/plugins/sign_in_with_apple/ios"
+
+SPEC CHECKSUMS:
+  AGConnectCore: 8952d9cc362ebf7e6058918c388c3cb4d5c1a0af
+  AGConnectCredential: 11841f6db52a522dec912cf9d27e7dca73fd855f
+  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
+  HiAnalytics: 1fb630149772c1d67eb8e565287d34e26eff126f
+  HMFoundation: 106cb37578333daa2c83f5885670307c3af7c3cc
+  huawei_analytics: 363865d4a66622c289f50d1a776ea3d60a37c946
+  sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
+
+PODFILE CHECKSUM: c4ab7041795041dbb75349ad294958bc992ab4a4
+
+COCOAPODS: 1.17.0

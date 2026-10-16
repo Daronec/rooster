@@ -7,19 +7,13 @@ import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart'
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
 import 'package:rooster/features/auth/domain/gateways/i_yandex_id_gateway.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:yandex_login_sdk/yandex_login_sdk.dart';
 
 /// Implementation of [IYandexIdGateway] and [IAuthGateway] for Yandex ID OAuth.
-///
-/// Flow:
-/// 1. User clicks "Sign in with Yandex ID"
-/// 2. Yandex ID OAuth2 flow starts (native app or browser)
-/// 3. Get authorization tokens
-/// 4. Save tokens to secure storage
-/// 5. Fetch user profile from Yandex API
-/// 6. Emit user to authStateChanges stream
 final class YandexIdAuthGatewayImpl
     with ChangeNotifier
     implements IYandexIdGateway, IAuthGateway {
+  /// Creates the Yandex ID auth gateway.
   YandexIdAuthGatewayImpl({
     required ILogWriter logger,
     FlutterSecureStorage? secureStorage,
@@ -27,6 +21,8 @@ final class YandexIdAuthGatewayImpl
         _secureStorage = secureStorage ?? const FlutterSecureStorage() {
     unawaited(_restoreSessionIfStored());
   }
+
+  static const _yandexClientId = '037e36490f9c4edca3e7af17f709f057';
 
   final ILogWriter _logger;
   final FlutterSecureStorage _secureStorage;
@@ -56,23 +52,57 @@ final class YandexIdAuthGatewayImpl
       _logger.log('yandex_id_auth_start');
       debugPrint('YandexIdAuthGatewayImpl: starting Yandex ID OAuth...');
 
-      // TODO: Integrate with yandex_login_sdk for actual OAuth flow.
-      // Example flow (requires yandex_login_sdk):
-      //
-      //   final loginResult = await YandexLoginSdk.signIn(
-      //     clientId: AppDotenv.yandexIdClientId,
-      //   );
-      //   final userInfo = await YandexLoginSdk.getUserInfo(
-      //     token: loginResult.token,
-      //   );
-      //
-      // For now, simulate a successful sign-in with test data.
-      // Replace this block with real SDK integration.
+      final loginResult = await YandexLoginSdk.signIn(
+        clientId: _yandexClientId,
+      );
 
-      await _simulateYandexOAuthFlow();
+      debugPrint(
+        'YandexIdAuthGatewayImpl: Yandex auth success, fetching user info...',
+      );
+      _logger.log('yandex_id_auth_tokens_obtained');
 
-      _logger.log('yandex_id_auth_complete');
+      final userInfo = await YandexLoginSdk.getUserInfo(
+        token: loginResult.token,
+      );
+
+      final email = userInfo.defaultEmail?.isNotEmpty == true
+          ? userInfo.defaultEmail
+          : (userInfo.emails.isNotEmpty ? userInfo.emails.first : null);
+
+      final firstName = userInfo.firstName?.isNotEmpty == true
+          ? userInfo.firstName
+          : null;
+      final lastName = userInfo.lastName?.isNotEmpty == true
+          ? userInfo.lastName
+          : null;
+      final displayName = [firstName, lastName]
+              .whereType<String>()
+              .join(' ')
+              .trim()
+            .isEmpty
+          ? null
+          : [firstName, lastName]
+              .whereType<String>()
+              .join(' ')
+              .trim();
+
+      await _saveUserSession(
+        userId: userInfo.id,
+        email: email,
+        displayName: displayName,
+        accessToken: loginResult.token,
+      );
+
+      _logger.log('yandex_id_auth_complete user=${userInfo.id}');
       debugPrint('YandexIdAuthGatewayImpl: Yandex ID OAuth complete');
+    } on YandexAuthCancelledException {
+      debugPrint('YandexIdAuthGatewayImpl: Yandex auth cancelled');
+      _logger.log('yandex_id_auth_cancelled');
+      rethrow;
+    } on YandexAuthInvalidTokenException {
+      debugPrint('YandexIdAuthGatewayImpl: Yandex auth invalid token');
+      _logger.log('yandex_id_auth_invalid_token');
+      rethrow;
     } on Exception catch (e) {
       _logger.log('yandex_id_auth_error: $e');
       debugPrint('YandexIdAuthGatewayImpl: Yandex ID OAuth error: $e');
@@ -115,8 +145,8 @@ final class YandexIdAuthGatewayImpl
 
       _currentUser = AppAuthUserEntity(
         uid: userId,
-        email: email.isNotEmpty ? email : null,
-        displayName: name.isNotEmpty ? name : null,
+        email: (email ?? '').isNotEmpty ? email : null,
+        displayName: (name ?? '').isNotEmpty ? name : null,
         isAnonymous: false,
       );
       _subject.add(_currentUser);
@@ -154,15 +184,13 @@ final class YandexIdAuthGatewayImpl
 
       _currentUser = AppAuthUserEntity(
         uid: userId,
-        email: email.isNotEmpty ? email : null,
-        displayName: displayName.isNotEmpty ? displayName : null,
+        email: (email ?? '').isNotEmpty ? email : null,
+        displayName: (displayName ?? '').isNotEmpty ? displayName : null,
         isAnonymous: false,
       );
       _subject.add(_currentUser);
-      _logger.log('yandex_id_auth_session_saved_ok');
-      debugPrint(
-        'YandexIdAuthGatewayImpl: session saved for user $userId',
-      );
+      _logger.log('yandex_id_auth_session_saved_ok user=$userId');
+      debugPrint('YandexIdAuthGatewayImpl: session saved for user $userId');
     } on Exception catch (e) {
       _logger.log('yandex_id_auth_session_save_error: $e');
     }
@@ -178,32 +206,5 @@ final class YandexIdAuthGatewayImpl
     } on Exception catch (e) {
       _logger.log('yandex_id_auth_clear_tokens_error: $e');
     }
-  }
-
-  /// Simulated OAuth flow — replace with real yandex_login_sdk integration.
-  Future<void> _simulateYandexOAuthFlow() async {
-    // In production, this would call:
-    //   final loginResult = await YandexLoginSdk.signIn(
-    //     clientId: AppDotenv.yandexIdClientId,
-    //   );
-    //   final userInfo = await YandexLoginSdk.getUserInfo(
-    //     token: loginResult.token,
-    //   );
-    //
-    // For now, we simulate the result:
-    await Future.delayed(const Duration(seconds: 1));
-
-    // Simulated Yandex user data
-    const mockUserId = 'mock_yandex_user_67890';
-    const mockEmail = 'user@example.com';
-    const mockName = 'Test User';
-    const mockAccessToken = 'mock_yandex_access_token';
-
-    await _saveUserSession(
-      userId: mockUserId,
-      email: mockEmail,
-      displayName: mockName,
-      accessToken: mockAccessToken,
-    );
   }
 }

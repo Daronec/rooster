@@ -1,5 +1,4 @@
-# Uncomment this line to define a global platform for your project
-# platform :ios, '13.0'
+platform :ios, '13.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -36,8 +35,9 @@ target 'Runner' do
   end
 
   # Sber ID SDK — нативный SDK для App-to-App авторизации (SberID).
-  // Документация: https://developers.sber.ru/docs/ru/sberid/sdk/iossdk/connection
-  pod 'SberId', '~> 2.0.0'
+  # Документация: https://developers.sber.ru/docs/ru/sberid/sdk/iossdk/connection
+  # NOTE: SberId pod not available in CocoaPods yet, commenting out
+  # pod 'SberId', '~> 2.0.0'
 end
 
 post_install do |installer|

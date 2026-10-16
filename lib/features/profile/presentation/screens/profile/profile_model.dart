@@ -43,7 +43,7 @@ final class ProfileScreenModel extends ElementaryModel {
       ValueNotifier<List<ProfileTeamCardEntity>>(<ProfileTeamCardEntity>[]);
 
   /// Стратегия облака (в режиме только офлайн вход с профиля не предлагается).
-  AuthBackendStrategy get authBackendStrategy => AuthBackendStrategy.sberId;
+  AuthBackendStrategy get authBackendStrategy => AuthBackendStrategy.vkId;
 
   /// Доступны команды.
   bool get supportsTeams => true;

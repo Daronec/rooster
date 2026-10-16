@@ -8,12 +8,15 @@ import 'package:rooster/config/app_config.dart';
 import 'package:rooster/config/environment/environment.dart';
 import 'package:rooster/core/sync/sync_manager_impl.dart';
 import 'package:rooster/core/sync/sync_manager_ref.dart';
+import 'package:rooster/core/sync/i_sync_remote_executor.dart';
+import 'package:rooster/core/sync/sync_operation.dart';
+import 'package:rooster/core/architecture/domain/entity/failure.dart';
+import 'package:rooster/core/architecture/domain/entity/result.dart';
 import 'package:rooster/features/ai/data/local_llm_gateway_impl.dart';
 import 'package:rooster/features/ai/domain/gateways/i_local_llm_gateway.dart';
 import 'package:rooster/features/app/di/app_scope.dart';
 import 'package:rooster/features/auth/di/auth_backend_assembler.dart';
 import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
-import 'package:rooster/features/cloud_ru/sync/cloud_ru_sync_remote_executor.dart';
 import 'package:rooster/features/planning/data/repositories/planning_repository_impl.dart';
 import 'package:rooster/features/profile/data/noop_profile_avatar_gateway_impl.dart';
 import 'package:rooster/features/profile/data/noop_profile_personal_data_gateway_impl.dart';
@@ -166,15 +169,9 @@ final class AppScopeRegister {
       authGateway: authAssembly.authGateway,
     );
 
-    final cloudRuSyncRemoteExecutor = CloudRuSyncRemoteExecutor(
-      cloudRuSyncExecutor: authAssembly.cloudRuSyncExecutor,
-      cloudRuClient: authAssembly.cloudRuClient,
-      logger: logger,
-    );
-
     final syncManager = SyncManagerImpl(
       syncQueue: syncQueueStorage,
-      remoteExecutor: cloudRuSyncRemoteExecutor,
+      remoteExecutor: const NoopSyncRemoteExecutor(),
       connectivity: connectivity,
       logger: logger,
     );
@@ -214,10 +211,11 @@ final class AppScopeRegister {
       localNotificationsPlugin: localNotificationsPlugin,
       tokenStorage: tokenStorage,
       pinCodeStorage: pinCodeStorage,
-      authBackendStrategy: AuthBackendStrategy.sberId,
+      authBackendStrategy: AuthBackendStrategy.vkId,
       isLikelyHuaweiOrHonorAndroidForAuthUi: false,
       authGateway: authAssembly.authGateway,
-      sberIdGateway: authAssembly.sberIdGateway,
+      vkIdGateway: authAssembly.vkIdGateway,
+      yandexIdGateway: authAssembly.yandexIdGateway,
       profileAvatarGateway: const NoopProfileAvatarGatewayImpl(),
       profilePersonalDataGateway: const NoopProfilePersonalDataGatewayImpl(),
       teamsGateway: authAssembly.teamsGateway,
@@ -242,5 +240,18 @@ final class AppScopeRegister {
       connectivityGateway: connectivity,
       localLLMGateway: localLLMGateway,
     );
+  }
+}
+
+/// Noop sync remote executor — placeholder until real implementation is ready.
+final class NoopSyncRemoteExecutor implements ISyncRemoteExecutor {
+  /// Creates the noop executor.
+  const NoopSyncRemoteExecutor();
+
+  @override
+  Future<Result<void, Failure<Exception>>> execute(
+    SyncOperation operation,
+  ) async {
+    return const Result.ok(null);
   }
 }

@@ -3,7 +3,7 @@ import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart'
 /// Минимальный шлюз сессии: состояние пользователя и выход.
 ///
 /// Используется для проверки авторизации и навигационных гвардов.
-/// Основная авторизация происходит через [ISberIdGateway].
+/// Основная авторизация происходит через [IVkIdGateway] / [IYandexIdGateway].
 abstract interface class IAuthGateway {
   /// Поток смены пользователя.
   Stream<AppAuthUserEntity?> get authStateChanges;

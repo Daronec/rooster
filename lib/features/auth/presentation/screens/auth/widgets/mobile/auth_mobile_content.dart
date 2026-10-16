@@ -1,10 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
-import 'package:provider/provider.dart';
-import 'package:rooster/features/app/di/app_scope.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_wm.dart';
-import 'package:rooster/features/auth/presentation/screens/auth/widgets/sber_id_sign_in_button.dart';
+import 'package:rooster/features/auth/presentation/screens/auth/widgets/vk_id_sign_in_button.dart';
+import 'package:rooster/features/auth/presentation/screens/auth/widgets/yandex_id_sign_in_button.dart';
 import 'package:rooster/uikit/layout_helpers/height.dart';
 import 'package:rooster/uikit/scaffold/app_scaffold.dart';
 import 'package:rooster/uikit/scaffold/default_app_bar.dart';
@@ -34,10 +33,11 @@ class AuthMobileContent extends StatelessWidget {
               FlutterI18n.translate(context, wm.introTranslationKey),
             ),
             const Height(AppSizes.double32),
-            // Кнопка Sber ID
-            SberIdSignInButton(
-              logWriter: context.read<IAppScope>().logger,
-            ),
+            // Кнопка VK ID
+            VkIdSignInButton(onTapped: wm.onVkIdTap),
+            const Height(AppSizes.double8),
+            // Кнопка Yandex ID
+            YandexIdSignInButton(onTapped: wm.onYandexIdTap),
             const Height(AppSizes.double8),
           ],
         ),
