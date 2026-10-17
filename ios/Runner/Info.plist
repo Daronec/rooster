@@ -68,10 +68,10 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>CLIENT_ID</key>
-	<string>YOUR_VK_APP_ID</string>
-	<key>CLIENT_SECRET</key>
-	<string>c0104c2151134b58a211bbfe457d9d0d</string>
+	<key>VK_APP_CLIENT_ID</key>
+	<string>54828050</string>
+	<key>VK_APP_CLIENT_SECRET</key>
+	<string>ke5jWl5tHTmHmDzfcbgS</string>
 	<key>YandexClientId</key>
 	<string>037e36490f9c4edca3e7af17f709f057</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
