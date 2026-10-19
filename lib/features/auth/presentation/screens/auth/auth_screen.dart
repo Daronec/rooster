@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:rooster/common/utils/snack_queue/presentation/snack_queue_provider.dart';
 import 'package:rooster/core/architecture/presentation/base_widget.dart';
 import 'package:rooster/features/app/di/app_scope.dart';
+import 'package:rooster/features/auth/data/services/social_auth_service.dart';
+import 'package:rooster/features/auth/data/services/social_sign_in_service.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_model.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_wm.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/widgets/desktop/auth_screen_desktop.dart';
@@ -26,11 +28,18 @@ class AuthScreen extends BaseWidget<AuthScreenWidgetModel> {
 AuthScreenWidgetModel authScreenWidgetModelFactory(BuildContext context) {
   final snack = SnackQueueProvider.of(context);
   final appScope = context.read<IAppScope>();
+
+  final socialAuthService = SocialAuthService(
+    vkIdService: appScope.vkIdGateway as SocialSignInService,
+    yandexIdService: appScope.yandexIdGateway as SocialSignInService,
+  );
+
   return AuthScreenWidgetModel(
     AuthScreenModel(
       authGateway: appScope.authGateway,
       vkIdGateway: appScope.vkIdGateway,
       yandexIdGateway: appScope.yandexIdGateway,
+      socialAuthService: socialAuthService,
     ),
     snackController: snack,
   );

@@ -42,7 +42,7 @@
 			<string>auth_callback</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>vk{APPID}</string>
+				<string>vk54828050</string>
 			</array>
 		</dict>
 		<dict>
@@ -52,7 +52,7 @@
 			<string>YandexLoginSDK</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>yx{CLIENT_ID}</string>
+				<string>yx037e36490f9c4edca3e7af17f709f057</string>
 			</array>
 		</dict>
 	</array>

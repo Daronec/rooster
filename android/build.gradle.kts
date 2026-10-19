@@ -3,7 +3,12 @@ allprojects {
         google()
         mavenCentral()
         maven(url = "https://developer.huawei.com/repo/")
-        maven(url = "https://artifactory-external.vkpartner.ru/artifactory/vkid-sdk-andorid/")
+        maven(url = "https://nexus-external.vkteam.ru/repository/vkid-sdk-android/")
+        maven {
+            url = uri("https://maven.google.com")
+        }
+        // Flutter engine artifacts from Google Storage
+        maven(url = "https://storage.googleapis.com/download.flutter.io")
     }
 }
 

@@ -40,18 +40,19 @@ android {
 
     defaultConfig {
         applicationId = "ru.aronets.rooster"
-        minSdk = flutter.minSdkVersion
+        // Increased to 26 because huawei_analytics requires minSdk 26
+        minSdk = 26
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // CMake конфигурация для native LLM library
-        externalNativeBuild {
-            cmake {
-                cppFlags += "-std=c++17"
-                arguments += "-DANDROID_STL=c++_shared"
-            }
-        }
+        // CMake конфигурация для native LLM library — временно отключена
+        // externalNativeBuild {
+        //     cmake {
+        //         cppFlags += "-std=c++17"
+        //         arguments += "-DANDROID_STL=c++_shared"
+        //     }
+        // }
 
         val huaweiAppId =
             readHuaweiAppIdFromAgconnect(layout.projectDirectory.asFile).ifEmpty {
@@ -61,7 +62,10 @@ android {
 
         // VK ID Client ID — настройте в local.properties (vk.client.id=...)
         val vkClientId = readVkClientIdFromLocalProperties(rootProject.layout.projectDirectory.asFile)
-        manifestPlaceholders["VKID_CLIENT_ID"] = vkClientId
+        manifestPlaceholders["VKIDClientID"] = vkClientId
+        manifestPlaceholders["VKIDClientSecret"] = ""
+        manifestPlaceholders["VKIDRedirectHost"] = "vk.ru"
+        manifestPlaceholders["VKIDRedirectScheme"] = "vk${vkClientId}"
 
         // Yandex Client ID — настройте в local.properties (yandex.client.id=...)
         val yandexClientId = readYandexClientIdFromLocalProperties(rootProject.layout.projectDirectory.asFile)
@@ -77,12 +81,13 @@ android {
         }
     }
 
-    externalNativeBuild {
-        cmake {
-            path = file("../../native/flutter_llm_bridge/CMakeLists.txt")
-            version = "3.22.1"
-        }
-    }
+    // Native LLM bridge временно отключён — нет llama.h
+    // externalNativeBuild {
+    //     cmake {
+    //         path = file("../../native/flutter_llm_bridge/CMakeLists.txt")
+    //         version = "3.22.1"
+    //     }
+    // }
 
     // Копируем GGUF модель в assets (не сжимать)
     aaptOptions {
@@ -130,10 +135,6 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
-
-    // Sber ID SDK — нативный SDK для App-to-App авторизации (SberID).
-    // Документация: https://developers.sber.ru/docs/ru/sberid/sdk/androidsdk/connection
-    implementation('ru.sberid:sdk:2.0.0')
 }
 
 /**
@@ -242,27 +243,6 @@ private fun readYandexClientIdFromLocalProperties(androidRootDir: File): String 
             ?: "YOUR_YANDEX_CLIENT_ID"
     } catch (_: Exception) {
         "YOUR_YANDEX_CLIENT_ID"
-    }
-}
-
-/** Резерв: `sber.client.id=...` в [android/local.properties] (файл обычно не в git). */
-private fun readSberClientIdFromLocalProperties(androidRootDir: File): String {
-    val localProps = File(androidRootDir, "local.properties")
-    if (!localProps.isFile) {
-        return "YOUR_CLIENT_ID" // TODO: Замените на реальный Client ID
-    }
-    return try {
-        localProps
-            .readLines()
-            .map { line -> line.trim() }
-            .firstOrNull { line -> line.startsWith("sber.client.id=") }
-            ?.substringAfter("=", "")
-            ?.trim()
-            .orEmpty()
-            .takeIf { it.isNotEmpty() }
-            ?: "YOUR_CLIENT_ID" // TODO: Замените на реальный Client ID
-    } catch (_: Exception) {
-        "YOUR_CLIENT_ID" // TODO: Замените на реальный Client ID
     }
 }
 

@@ -15,6 +15,7 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         maven(url = "https://developer.huawei.com/repo/")
+        maven(url = "https://nexus-external.vkteam.ru/repository/vkid-sdk-android/")
     }
 
 }

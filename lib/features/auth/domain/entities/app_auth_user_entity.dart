@@ -7,6 +7,8 @@ final class AppAuthUserEntity {
     this.email,
     this.displayName,
     this.photoUrl,
+    this.birthDate,
+    this.gender,
   });
 
   /// Стабильный идентификатор (Firebase uid, unionId HMS и т.д.).
@@ -20,6 +22,12 @@ final class AppAuthUserEntity {
 
   /// URL аватара.
   final String? photoUrl;
+
+  /// Дата рождения (формат строки, например "dd.mm.yyyy").
+  final String? birthDate;
+
+  /// Пол (например "male", "female", или значение от провайдера).
+  final String? gender;
 
   /// Анонимная или локальная сессия без привязки к внешнему аккаунту.
   final bool isAnonymous;

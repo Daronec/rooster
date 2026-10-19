@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:rooster/common/utils/snack_queue/presentation/snack_message_type.dart';
 import 'package:rooster/core/architecture/presentation/base_widget_model.dart';
 import 'package:rooster/features/app/di/app_scope.dart';
+import 'package:rooster/features/auth/data/services/social_auth_service_types.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
 import 'package:rooster/features/auth/domain/gateways/i_vk_id_gateway.dart';
@@ -15,6 +16,7 @@ import 'package:rooster/features/auth/presentation/screens/auth/auth_model.dart'
 import 'package:rooster/features/auth/presentation/screens/auth/auth_screen.dart';
 import 'package:rooster/features/navigation/root_main_app_route.dart'
     show rootMainAppStackOpenProfileRoutes;
+import 'package:yandex_login_sdk/yandex_login_sdk.dart';
 
 /// WidgetModel экрана авторизации (VK ID / Yandex ID).
 class AuthScreenWidgetModel
@@ -62,6 +64,9 @@ class AuthScreenWidgetModel
   Future<void> onVkIdTap() async {
     try {
       await vkIdGateway.signInWithVkId();
+    } on SocialAuthCanceledException {
+      // User cancelled -- silent return, no snack
+      return;
     } on Exception {
       snackController.addSnack(
         FlutterI18n.translate(context, 'auth.vkSignInFailed'),
@@ -74,6 +79,12 @@ class AuthScreenWidgetModel
   Future<void> onYandexIdTap() async {
     try {
       await yandexIdGateway.signInWithYandexId();
+    } on SocialAuthCanceledException {
+      // User cancelled -- silent return, no snack
+      return;
+    } on YandexAuthCancelledException {
+      // User cancelled via Yandex SDK -- silent return, no snack
+      return;
     } on Exception {
       snackController.addSnack(
         FlutterI18n.translate(context, 'auth.yandexSignInFailed'),

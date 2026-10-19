@@ -1,4 +1,5 @@
 import 'package:elementary/elementary.dart';
+import 'package:rooster/features/auth/data/services/social_auth_service.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
 import 'package:rooster/features/auth/domain/gateways/i_vk_id_gateway.dart';
@@ -11,13 +12,16 @@ final class AuthScreenModel extends ElementaryModel {
     required IAuthGateway authGateway,
     required IVkIdGateway vkIdGateway,
     required IYandexIdGateway yandexIdGateway,
+    required SocialAuthService socialAuthService,
   })  : _authGateway = authGateway,
         _vkIdGateway = vkIdGateway,
-        _yandexIdGateway = yandexIdGateway;
+        _yandexIdGateway = yandexIdGateway,
+        _socialAuthService = socialAuthService;
 
   final IAuthGateway _authGateway;
   final IVkIdGateway _vkIdGateway;
   final IYandexIdGateway _yandexIdGateway;
+  final SocialAuthService _socialAuthService;
 
   /// Основной шлюз авторизации.
   IAuthGateway get authGateway => _authGateway;
@@ -27,6 +31,9 @@ final class AuthScreenModel extends ElementaryModel {
 
   /// Шлюз Yandex ID.
   IYandexIdGateway get yandexIdGateway => _yandexIdGateway;
+
+  /// Social auth facade for sign-in flows.
+  SocialAuthService get socialAuthService => _socialAuthService;
 
   /// Поток смены пользователя.
   Stream<AppAuthUserEntity?> get authStateChanges =>

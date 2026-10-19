@@ -3,16 +3,18 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:rooster/common/utils/logger/i_log_writer.dart';
+import 'package:rooster/features/auth/data/services/social_auth_service_types.dart';
+import 'package:rooster/features/auth/data/services/social_sign_in_service.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
 import 'package:rooster/features/auth/domain/gateways/i_vk_id_gateway.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:vkid_flutter_sdk/library_vkid.dart';
 
-/// Implementation of [IVkIdGateway] and [IAuthGateway] for VK ID OAuth.
+/// Implementation of [IVkIdGateway], [IAuthGateway] and [SocialSignInService] for VK ID OAuth.
 final class VkIdAuthGatewayImpl
     with ChangeNotifier
-    implements IVkIdGateway, IAuthGateway {
+    implements IVkIdGateway, IAuthGateway, SocialSignInService {
   /// Creates the VK ID auth gateway.
   VkIdAuthGatewayImpl({
     required ILogWriter logger,
@@ -30,6 +32,8 @@ final class VkIdAuthGatewayImpl
   static const _vkUserIdKey = 'oauth_vk_user_id';
   static const _vkUserEmailKey = 'oauth_vk_user_email';
   static const _vkUserNameKey = 'oauth_vk_user_name';
+  static const _vkUserBirthDateKey = 'oauth_vk_user_birth_date';
+  static const _vkUserGenderKey = 'oauth_vk_user_gender';
 
   final BehaviorSubject<AppAuthUserEntity?> _subject =
       BehaviorSubject<AppAuthUserEntity?>.seeded(null);
@@ -38,6 +42,34 @@ final class VkIdAuthGatewayImpl
 
   @override
   bool get isVkIdAvailable => true;
+
+  @override
+  SocialAuthProvider get provider => SocialAuthProvider.vk;
+
+  @override
+  Future<SocialAuthResult> signIn() async {
+    final vkid = await VKID.getInstance();
+    final authData = await _authorizeVk(vkid);
+
+    try {
+      final userData = await _fetchVkUser(vkid)
+          .catchError((_) => authData.userData, test: (_) => true);
+
+      return SocialAuthResult(
+        provider: provider,
+        subject: authData.userID.toString(),
+        email: _nonEmpty(userData.email) ?? 'vk-${authData.userID}@vk.local',
+        phone: _nonEmpty(userData.phone),
+        displayName: _displayName([userData.firstName, userData.lastName]),
+        avatarUrl: authData.userData.avatarUrl,
+        accessToken: authData.token,
+        refreshToken: authData.idToken,
+      );
+    } on Exception catch (e) {
+      debugPrint('VK ID: fetch user exception: $e');
+      rethrow;
+    }
+  }
 
   @override
   Stream<AppAuthUserEntity?> get authStateChanges => _subject.stream;
@@ -71,7 +103,7 @@ final class VkIdAuthGatewayImpl
           _logger.log('vk_id_auth_error: $error');
           if (!completer.isCompleted) {
             if (error is AuthCancelledError) {
-              completer.completeError(const _VkAuthCancelledException());
+              completer.completeError(const SocialAuthCanceledException());
             } else if (error is AuthOtherError) {
               completer.completeError(StateError(error.description));
             } else {
@@ -85,7 +117,7 @@ final class VkIdAuthGatewayImpl
 
       final authData = await completer.future;
       await _handleVkAuthSuccess(authData);
-    } on _VkAuthCancelledException {
+    } on SocialAuthCanceledException {
       rethrow;
     } on StateError {
       rethrow;
@@ -129,11 +161,16 @@ final class VkIdAuthGatewayImpl
 
       final email = await _secureStorage.read(key: _vkUserEmailKey);
       final name = await _secureStorage.read(key: _vkUserNameKey);
+      final birthDate =
+          await _secureStorage.read(key: _vkUserBirthDateKey);
+      final gender = await _secureStorage.read(key: _vkUserGenderKey);
 
       _currentUser = AppAuthUserEntity(
         uid: userId,
         email: (email ?? '').isNotEmpty ? email : null,
         displayName: (name ?? '').isNotEmpty ? name : null,
+        birthDate: (birthDate ?? '').isNotEmpty ? birthDate : null,
+        gender: (gender ?? '').isNotEmpty ? gender : null,
         isAnonymous: false,
       );
       _subject.add(_currentUser);
@@ -165,10 +202,15 @@ final class VkIdAuthGatewayImpl
             .join(' ')
             .trim();
 
+    final birthDate = _extractField(userData, 'birthday');
+    final gender = _extractField(userData, 'sex');
+
     await _saveUserSession(
       userId: userId,
       email: email,
       displayName: displayName,
+      birthDate: birthDate,
+      gender: gender,
       accessToken: authData.token,
       idToken: authData.idToken,
     );
@@ -177,11 +219,26 @@ final class VkIdAuthGatewayImpl
     debugPrint('VkIdAuthGatewayImpl: session saved for user $userId');
   }
 
+  /// Extract a field from VK ID user data.
+  String? _extractField(dynamic userData, String fieldName) {
+    try {
+      final value = userData.data?[fieldName];
+      if (value != null) {
+        return value.toString();
+      }
+    } on Exception catch (_) {
+      // Ignore errors accessing userData.data
+    }
+    return null;
+  }
+
   /// Save user data to secure storage after successful OAuth.
   Future<void> _saveUserSession({
     required String userId,
     required String? email,
     required String? displayName,
+    required String? birthDate,
+    required String? gender,
     required String accessToken,
     required String idToken,
   }) async {
@@ -197,11 +254,21 @@ final class VkIdAuthGatewayImpl
         key: _vkUserNameKey,
         value: displayName ?? '',
       );
+      await _secureStorage.write(
+        key: _vkUserBirthDateKey,
+        value: birthDate ?? '',
+      );
+      await _secureStorage.write(
+        key: _vkUserGenderKey,
+        value: gender ?? '',
+      );
 
       _currentUser = AppAuthUserEntity(
         uid: userId,
         email: (email ?? '').isNotEmpty ? email : null,
         displayName: (displayName ?? '').isNotEmpty ? displayName : null,
+        birthDate: (birthDate ?? '').isNotEmpty ? birthDate : null,
+        gender: (gender ?? '').isNotEmpty ? gender : null,
         isAnonymous: false,
       );
       _subject.add(_currentUser);
@@ -220,6 +287,8 @@ final class VkIdAuthGatewayImpl
       await _secureStorage.delete(key: _vkUserIdKey);
       await _secureStorage.delete(key: _vkUserEmailKey);
       await _secureStorage.delete(key: _vkUserNameKey);
+      await _secureStorage.delete(key: _vkUserBirthDateKey);
+      await _secureStorage.delete(key: _vkUserGenderKey);
     } on Exception catch (e) {
       _logger.log('vk_id_auth_clear_tokens_error: $e');
     }
@@ -235,12 +304,81 @@ final class VkIdAuthGatewayImpl
       _logger.log('vk_id_logout_error: $e');
     }
   }
-}
 
-/// Exception thrown when VK ID auth is cancelled by user.
-final class _VkAuthCancelledException implements Exception {
-  const _VkAuthCancelledException();
+  /// Authorize with VK ID SDK using completer pattern.
+  Future<AuthData> _authorizeVk(VKID vkid) {
+    final completer = Completer<AuthData>();
 
-  @override
-  String toString() => 'VK ID authorization cancelled by user';
+    vkid.authorize(
+      onAuth: (authData) {
+        if (!completer.isCompleted) {
+          completer.complete(authData);
+        }
+      },
+      onError: (error) {
+        if (completer.isCompleted) return;
+        if (error is AuthCancelledError) {
+          completer.completeError(const SocialAuthCanceledException());
+          return;
+        }
+        if (error is AuthOtherError) {
+          completer.completeError(StateError(error.description));
+          return;
+        }
+        completer.completeError(
+          StateError('VK ID authorization failed: $error'),
+        );
+      },
+      params: AuthParamsBuilder().build(),
+    );
+
+    return completer.future.timeout(
+      const Duration(seconds: 60),
+      onTimeout: () => throw StateError('VK ID authorization timed out'),
+    );
+  }
+
+  /// Fetch user details from VK ID SDK.
+  Future<User> _fetchVkUser(VKID vkid) {
+    final completer = Completer<User>();
+
+    vkid.fetchUser(
+      onSuccess: (user) {
+        if (!completer.isCompleted) {
+          completer.complete(user);
+        }
+      },
+      onError: (error) {
+        if (!completer.isCompleted) {
+          completer.completeError(
+            StateError(_vkFetchUserErrorMessage(error)),
+          );
+        }
+      },
+    );
+
+    return completer.future;
+  }
+
+  String _vkFetchUserErrorMessage(FetchUserError error) {
+    return switch (error) {
+      FetchUserTokenExpiredError() => 'VK ID user token expired',
+      FetchUserOtherError(:final description) =>
+        'VK ID user fetch failed: $description',
+    };
+  }
+
+  String? _nonEmpty(String? value) {
+    final trimmed = value?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
+  }
+
+  String? _displayName(Iterable<String?> parts) {
+    final value = parts
+        .whereType<String>()
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .join(' ');
+    return value.isEmpty ? null : value;
+  }
 }
