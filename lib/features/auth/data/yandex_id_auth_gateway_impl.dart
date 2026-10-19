@@ -1,28 +1,31 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:rooster/common/utils/logger/i_log_writer.dart';
+import 'package:rooster/config/app_dotenv.dart';
+import 'package:rooster/features/auth/data/services/social_auth_service_types.dart';
+import 'package:rooster/features/auth/data/services/social_sign_in_service.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
 import 'package:rooster/features/auth/domain/gateways/i_yandex_id_gateway.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:yandex_login_sdk/yandex_login_sdk.dart';
 
-/// Implementation of [IYandexIdGateway] and [IAuthGateway] for Yandex ID OAuth.
+/// Implementation of [IYandexIdGateway], [IAuthGateway] and [SocialSignInService] for Yandex ID OAuth.
 final class YandexIdAuthGatewayImpl
     with ChangeNotifier
-    implements IYandexIdGateway, IAuthGateway {
+    implements IYandexIdGateway, IAuthGateway, SocialSignInService {
   /// Creates the Yandex ID auth gateway.
   YandexIdAuthGatewayImpl({
     required ILogWriter logger,
     FlutterSecureStorage? secureStorage,
-  })  : _logger = logger,
-        _secureStorage = secureStorage ?? const FlutterSecureStorage() {
+  }) : _logger = logger,
+       _secureStorage = secureStorage ?? const FlutterSecureStorage() {
     unawaited(_restoreSessionIfStored());
   }
 
-  static const _yandexClientId = '037e36490f9c4edca3e7af17f709f057';
+  static String get clientId => AppDotenv.yandexIdClientId;
 
   final ILogWriter _logger;
   final FlutterSecureStorage _secureStorage;
@@ -41,6 +44,67 @@ final class YandexIdAuthGatewayImpl
   bool get isYandexIdAvailable => true;
 
   @override
+  SocialAuthProvider get provider => SocialAuthProvider.yandex;
+
+  @override
+  Future<SocialAuthResult> signIn() async {
+    _ensureConfigured(
+      AppDotenv.yandexIdClientId.isNotEmpty,
+      'YANDEX_ID_CLIENT_ID',
+    );
+
+    try {
+      // Yandex SDK requires Activity context — delay until after frame is built
+      // to ensure the plugin is attached to a FragmentActivity.
+      final loginResult = await _deferSignIn();
+
+      final user = await YandexLoginSdk.getUserInfo(token: loginResult.token);
+      final email =
+          user.defaultEmail ??
+          (user.emails.isNotEmpty ? user.emails.first : null) ??
+          '${user.login.isNotEmpty ? user.login : 'yandex-${user.id}'}@yandex.local';
+
+      return SocialAuthResult(
+        provider: provider,
+        subject: user.id,
+        email: email,
+        phone: user.defaultPhone?.number,
+        displayName:
+            _nonEmpty(user.displayName ?? '') ??
+            _nonEmpty(user.realName ?? '') ??
+            _displayName([user.firstName, user.lastName]) ??
+            _nonEmpty(user.login),
+        accessToken: loginResult.token,
+      );
+    } on YandexAuthCancelledException {
+      throw const SocialAuthCanceledException();
+    }
+  }
+
+  /// Defer Yandex SDK signIn until the widget tree is attached to an Activity.
+  /// Uses webOnly strategy to force Chrome Custom Tab (system Chrome has its own
+  /// trust store, bypassing Russian CA certificate issues in the SDK's WebView).
+  Future<YandexLoginResult> _deferSignIn() async {
+    final completer = Completer<YandexLoginResult>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (completer.isCompleted) return;
+      YandexLoginSdk.signIn(
+        clientId: clientId,
+        strategy: YandexLoginStrategy.webOnly,
+      ).then(completer.complete).catchError(
+        (Object error) {
+          if (!completer.isCompleted) {
+            completer.completeError(error);
+          }
+        },
+      );
+    });
+
+    return completer.future;
+  }
+
+  @override
   Stream<AppAuthUserEntity?> get authStateChanges => _subject.stream;
 
   @override
@@ -52,9 +116,8 @@ final class YandexIdAuthGatewayImpl
       _logger.log('yandex_id_auth_start');
       debugPrint('YandexIdAuthGatewayImpl: starting Yandex ID OAuth...');
 
-      final loginResult = await YandexLoginSdk.signIn(
-        clientId: _yandexClientId,
-      );
+      // Defer Yandex SDK signIn until the widget tree is attached to an Activity.
+      final loginResult = await _deferSignIn();
 
       debugPrint(
         'YandexIdAuthGatewayImpl: Yandex auth success, fetching user info...',
@@ -75,16 +138,10 @@ final class YandexIdAuthGatewayImpl
       final lastName = userInfo.lastName?.isNotEmpty == true
           ? userInfo.lastName
           : null;
-      final displayName = [firstName, lastName]
-              .whereType<String>()
-              .join(' ')
-              .trim()
-            .isEmpty
+      final displayName =
+          [firstName, lastName].whereType<String>().join(' ').trim().isEmpty
           ? null
-          : [firstName, lastName]
-              .whereType<String>()
-              .join(' ')
-              .trim();
+          : [firstName, lastName].whereType<String>().join(' ').trim();
 
       await _saveUserSession(
         userId: userInfo.id,
@@ -206,5 +263,27 @@ final class YandexIdAuthGatewayImpl
     } on Exception catch (e) {
       _logger.log('yandex_id_auth_clear_tokens_error: $e');
     }
+  }
+
+  void _ensureConfigured(bool isConfigured, String key) {
+    if (!isConfigured) {
+      throw StateError(
+        '$key is empty. Add it to the repository root .env.',
+      );
+    }
+  }
+
+  String? _nonEmpty(String? value) {
+    final trimmed = value?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
+  }
+
+  String? _displayName(Iterable<String?> parts) {
+    final value = parts
+        .whereType<String>()
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .join(' ');
+    return value.isEmpty ? null : value;
   }
 }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow all traffic and trust system certificates for WebView -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- Specific config for Yandex OAuth -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">mdd.yandex.net</domain>
+        <domain includeSubdomains="true">login.yandex.ru</domain>
+        <domain includeSubdomains="true">oauth.yandex.ru</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

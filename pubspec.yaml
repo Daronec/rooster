@@ -10,7 +10,7 @@ dependencies:
   app_links: ^7.0.0
   appwrite: 23.0.0
   audioplayers: ^6.6.0
-  auto_route: ^11.1.0
+  auto_route: 11.1.0
   collection: ^1.18.0
   connectivity_plus: ^6.1.4
   cupertino_icons: ^1.0.8
