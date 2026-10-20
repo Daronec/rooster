@@ -9,8 +9,8 @@ class TeamsGatewayImpl implements ITeamsGateway {
   TeamsGatewayImpl({
     required CloudRuClient cloudRuClient,
     required ILogWriter logger,
-  })  : _cloudRuClient = cloudRuClient,
-        _logger = logger;
+  }) : _cloudRuClient = cloudRuClient,
+       _logger = logger;
 
   final CloudRuClient _cloudRuClient;
   final ILogWriter _logger;
@@ -60,7 +60,9 @@ class TeamsGatewayImpl implements ITeamsGateway {
       final details = await _cloudRuClient.fetchTeamDetails(teamId);
 
       if (details == null) {
-        _logger.log('teams_gateway_load_team_details_not_found: teamId=$teamId');
+        _logger.log(
+          'teams_gateway_load_team_details_not_found: teamId=$teamId',
+        );
         return null;
       }
 
@@ -168,9 +170,13 @@ class TeamsGatewayImpl implements ITeamsGateway {
     required String invitationToken,
   }) async {
     try {
-      _logger.log('teams_gateway_accept_invitation_start: token=$invitationToken');
+      _logger.log(
+        'teams_gateway_accept_invitation_start: token=$invitationToken',
+      );
 
-      final success = await _cloudRuClient.acceptTeamInvitation(invitationToken);
+      final success = await _cloudRuClient.acceptTeamInvitation(
+        invitationToken,
+      );
 
       if (!success) {
         throw Exception('teams_accept_invitation_failed');
@@ -188,7 +194,9 @@ class TeamsGatewayImpl implements ITeamsGateway {
     required String invitationToken,
   }) async {
     try {
-      _logger.log('teams_gateway_reject_invitation_start: token=$invitationToken');
+      _logger.log(
+        'teams_gateway_reject_invitation_start: token=$invitationToken',
+      );
 
       final success = await _cloudRuClient.rejectInvitation(
         invitationToken: invitationToken,
@@ -243,7 +251,9 @@ class TeamsGatewayImpl implements ITeamsGateway {
       final invitations = await _cloudRuClient.fetchTeamInvitations(teamId);
 
       if (invitations == null || invitations.isEmpty) {
-        _logger.log('teams_gateway_load_team_invitations_empty: teamId=$teamId');
+        _logger.log(
+          'teams_gateway_load_team_invitations_empty: teamId=$teamId',
+        );
         return [];
       }
 
@@ -256,7 +266,9 @@ class TeamsGatewayImpl implements ITeamsGateway {
         }
       }
 
-      _logger.log('teams_gateway_load_team_invitations_done: count=${result.length}');
+      _logger.log(
+        'teams_gateway_load_team_invitations_done: count=${result.length}',
+      );
       return result;
     } on Exception catch (e) {
       _logger.log('teams_gateway_load_team_invitations_error: $e');
