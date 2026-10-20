@@ -16,10 +16,14 @@ import 'package:rooster/features/ai/data/local_llm_gateway_impl.dart';
 import 'package:rooster/features/ai/domain/gateways/i_local_llm_gateway.dart';
 import 'package:rooster/features/app/di/app_scope.dart';
 import 'package:rooster/features/auth/di/auth_backend_assembler.dart';
+import 'package:rooster/features/cloud_ru/api/cloud_ru_client.dart';
+import 'package:rooster/features/cloud_ru/sync/cloud_ru_sync_executor.dart';
+import 'package:rooster/features/cloud_ru/sync/cloud_ru_sync_remote_executor.dart';
 import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
 import 'package:rooster/features/planning/data/repositories/planning_repository_impl.dart';
-import 'package:rooster/features/profile/data/noop_profile_avatar_gateway_impl.dart';
-import 'package:rooster/features/profile/data/noop_profile_personal_data_gateway_impl.dart';
+import 'package:rooster/features/profile/data/cloud_ru_profile_avatar_gateway_impl.dart';
+import 'package:rooster/features/profile/data/cloud_ru_profile_personal_data_gateway_impl.dart';
+import 'package:rooster/features/profile/data/teams_gateway_impl.dart';
 import 'package:rooster/features/profile/domain/services/user_profile_service.dart';
 import 'package:rooster/features/tasks/data/gateways/task_local_image_gateway_io.dart';
 import 'package:rooster/features/tasks/data/gateways/task_local_image_gateway_stub.dart';
@@ -185,10 +189,32 @@ final class AppScopeRegister {
       storageEndpoint: env.storageEndpoint,
       tokenExchangeEndpoint: env.tokenExchangeEndpoint,
     );
+
+    // Create CloudRuClient for sync and profile operations
+    final cloudRuClient = CloudRuClient(
+      serverlessEndpoint: env.serverlessEndpoint,
+      storageEndpoint: env.storageEndpoint,
+      iamToken: null, // IAM token будет обновлён через authAssembly
+      logger: logger,
+    );
+
+    // Create CloudRuSyncExecutor with repositories
+    final cloudRuSyncExecutor = CloudRuSyncExecutor(
+      cloudRuClient: cloudRuClient,
+      syncQueue: syncQueueStorage,
+      tasksRepository: tasksRepoImpl,
+      taskListsRepository: listsRepoImpl,
+      planningRepository: planningRepoImpl,
+      materialStockRepository: materialStockRepoImpl,
+      logger: logger,
+    );
+
     final userProfileService = UserProfileService(
       authGateway: authAssembly.authGateway,
-      profilePersonalDataGateway:
-          const NoopProfilePersonalDataGatewayImpl(),
+      profilePersonalDataGateway: CloudRuProfilePersonalDataGatewayImpl(
+        cloudRuClient: cloudRuClient,
+        logger: logger,
+      ),
     );
     taskChangeAuthorProviderRef.target = AuthTaskChangeAuthorProvider(
       userProfileService: userProfileService,
@@ -196,7 +222,11 @@ final class AppScopeRegister {
 
     final syncManager = SyncManagerImpl(
       syncQueue: syncQueueStorage,
-      remoteExecutor: const NoopSyncRemoteExecutor(),
+      remoteExecutor: CloudRuSyncRemoteExecutor(
+        cloudRuSyncExecutor: cloudRuSyncExecutor,
+        cloudRuClient: cloudRuClient,
+        logger: logger,
+      ),
       connectivity: connectivity,
       logger: logger,
     );
@@ -245,8 +275,14 @@ final class AppScopeRegister {
       authGateway: authAssembly.authGateway,
       vkIdGateway: authAssembly.vkIdGateway,
       yandexIdGateway: authAssembly.yandexIdGateway,
-      profileAvatarGateway: const NoopProfileAvatarGatewayImpl(),
-      profilePersonalDataGateway: const NoopProfilePersonalDataGatewayImpl(),
+      profileAvatarGateway: CloudRuProfileAvatarGatewayImpl(
+        cloudRuClient: cloudRuClient,
+        logger: logger,
+      ),
+      profilePersonalDataGateway: CloudRuProfilePersonalDataGatewayImpl(
+        cloudRuClient: cloudRuClient,
+        logger: logger,
+      ),
       teamsGateway: authAssembly.teamsGateway,
       userProfileService: userProfileService,
       tasksRepository: tasksRepoImpl,

@@ -17,6 +17,7 @@ import 'package:rooster/features/planning/domain/repositories/i_planning_reposit
 import 'package:rooster/features/profile/domain/gateways/i_profile_avatar_gateway.dart';
 import 'package:rooster/features/profile/domain/gateways/i_profile_personal_data_gateway.dart';
 import 'package:rooster/features/profile/domain/gateways/i_teams_gateway.dart';
+import 'package:rooster/features/profile/domain/services/user_profile_service.dart';
 import 'package:rooster/features/tasks/domain/gateways/i_task_local_image_gateway.dart';
 import 'package:rooster/features/tasks/domain/gateways/i_tasks_screen_expanded_group_storage.dart';
 import 'package:rooster/features/tasks/domain/repositories/i_budget_repository.dart';
@@ -71,6 +72,9 @@ abstract interface class IAppScope implements ICoreScope, ITasksScope {
   /// Команды пользователя.
   ITeamsGateway get teamsGateway;
 
+  /// Объединённый сервис профиля пользователя.
+  IUserProfileService get userProfileService;
+
   /// Планы.
   IPlanningRepository get planningRepository;
 
@@ -103,6 +107,7 @@ final class AppScope implements IAppScope {
     required this.profileAvatarGateway,
     required this.profilePersonalDataGateway,
     required this.teamsGateway,
+    required this.userProfileService,
     required this.tasksRepository,
     required this.taskListsRepository,
     required this.planningRepository,
@@ -179,6 +184,9 @@ final class AppScope implements IAppScope {
 
   @override
   final ITeamsGateway teamsGateway;
+
+  @override
+  final IUserProfileService userProfileService;
 
   @override
   final IPlanningRepository planningRepository;

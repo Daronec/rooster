@@ -31,8 +31,11 @@ final class CloudRuSyncRemoteExecutor implements ISyncRemoteExecutor {
         'endpoint=${_cloudRuClient.serverlessEndpoint}',
       );
 
-      // TODO(cloud.ru): Implement actual sync logic based on operation type
+      // Выполнить push локальных изменений на сервер
       await _cloudRuSyncExecutor.executeOutboundSync();
+      
+      // Выполнить pull изменений с сервера
+      await _cloudRuSyncExecutor.executeInboundSync();
 
       return const Result.ok(null);
     } on Exception catch (e, stackTrace) {

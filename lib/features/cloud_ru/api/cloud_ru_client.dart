@@ -82,6 +82,32 @@ class CloudRuClient {
     }
   }
 
+  /// Загрузить списки задач с cloud.ru.
+  Future<List<Map<String, dynamic>>> fetchTaskLists() async {
+    try {
+      final response = await _dio.get<List<dynamic>>('/task-lists');
+      if (response.statusCode == 200) {
+        final data = response.data ?? <dynamic>[];
+        return data.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_fetch_task_lists_error: $e');
+      return [];
+    }
+  }
+
+  /// Синхронизировать списки задач с cloud.ru.
+  Future<bool> syncTaskLists(List<Map<String, dynamic>> lists) async {
+    try {
+      final response = await _dio.post<bool>('/task-lists/sync', data: lists);
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_sync_task_lists_error: $e');
+      return false;
+    }
+  }
+
   // ==================== Plans API ====================
 
   /// Загрузить планы с cloud.ru.
@@ -188,6 +214,22 @@ class CloudRuClient {
     }
   }
 
+  /// Принять приглашение в команду по токену.
+  Future<bool> acceptTeamInvitation(String invitationToken) async {
+    try {
+      final response = await _dio.post<bool>(
+        '/teams/accept-invitation',
+        data: {
+          'invitationToken': invitationToken,
+        },
+      );
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_accept_invitation_error: $e');
+      return false;
+    }
+  }
+
   /// Покинуть команду.
   Future<bool> leaveTeam({
     required String teamId,
@@ -205,6 +247,91 @@ class CloudRuClient {
     } on Exception catch (e) {
       _logger.log('cloud_ru_leave_team_error: $e');
       return false;
+    }
+  }
+
+  /// Получить детали команды с участниками.
+  Future<Map<String, dynamic>?> fetchTeamDetails(String teamId) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/teams/$teamId');
+      return response.statusCode == 200 ? response.data : null;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_fetch_team_details_error: $e');
+      return null;
+    }
+  }
+
+  /// Обновить роль участника в команде.
+  Future<bool> updateMemberRole({
+    required String teamId,
+    required String memberUserId,
+    required List<String> roles,
+  }) async {
+    try {
+      final response = await _dio.put<bool>(
+        '/teams/members/$memberUserId/role',
+        data: {
+          'teamId': teamId,
+          'memberUserId': memberUserId,
+          'roles': roles,
+        },
+      );
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_update_member_role_error: $e');
+      return false;
+    }
+  }
+
+  /// Отозвать приглашение в команду.
+  Future<bool> revokeInvitation({
+    required String teamId,
+    required String invitationId,
+  }) async {
+    try {
+      final response = await _dio.delete<bool>(
+        '/teams/invitations',
+        data: {
+          'teamId': teamId,
+          'invitationId': invitationId,
+        },
+      );
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_revoke_invitation_error: $e');
+      return false;
+    }
+  }
+
+  /// Отклонить приглашение в команду.
+  Future<bool> rejectInvitation({
+    required String invitationToken,
+  }) async {
+    try {
+      final response = await _dio.post<bool>(
+        '/teams/reject-invitation',
+        data: {
+          'invitationToken': invitationToken,
+        },
+      );
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_reject_invitation_error: $e');
+      return false;
+    }
+  }
+
+  /// Получить список активных приглашений в команде.
+  Future<List<dynamic>?> fetchTeamInvitations(String teamId) async {
+    try {
+      final response = await _dio.get<List<dynamic>>('/teams/$teamId/invitations');
+      if (response.statusCode == 200) {
+        return response.data;
+      }
+      return null;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_fetch_team_invitations_error: $e');
+      return null;
     }
   }
 
@@ -250,6 +377,285 @@ class CloudRuClient {
     try {
       return '$_storageEndpoint/$bucket/$objectKey';
     } on Exception {
+      return null;
+    }
+  }
+
+  // ==================== Task CRUD ====================
+
+  /// Загрузить одну задачу по ID.
+  Future<Map<String, dynamic>?> fetchTask(String taskId) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/tasks/$taskId');
+      return response.statusCode == 200 ? response.data : null;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_fetch_task_error: $e');
+      return null;
+    }
+  }
+
+  /// Создать новую задачу.
+  Future<Map<String, dynamic>?> createTask(Map<String, dynamic> task) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>('/tasks', data: task);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.data;
+      }
+      return null;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_create_task_error: $e');
+      return null;
+    }
+  }
+
+  /// Обновить задачу (полная замена).
+  Future<bool> updateTask(String taskId, Map<String, dynamic> task) async {
+    try {
+      final response = await _dio.put<bool>('/tasks/$taskId', data: task);
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_update_task_error: $e');
+      return false;
+    }
+  }
+
+  /// Удалить задачу.
+  Future<bool> deleteTask(String taskId) async {
+    try {
+      final response = await _dio.delete<bool>('/tasks/$taskId');
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_delete_task_error: $e');
+      return false;
+    }
+  }
+
+  // ==================== Task List CRUD ====================
+
+  /// Загрузить один список по ID.
+  Future<Map<String, dynamic>?> fetchTaskList(String listId) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/task-lists/$listId');
+      return response.statusCode == 200 ? response.data : null;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_fetch_task_list_error: $e');
+      return null;
+    }
+  }
+
+  /// Создать новый список.
+  Future<Map<String, dynamic>?> createTaskList(Map<String, dynamic> list) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>('/task-lists', data: list);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.data;
+      }
+      return null;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_create_task_list_error: $e');
+      return null;
+    }
+  }
+
+  /// Обновить список.
+  Future<bool> updateTaskList(String listId, Map<String, dynamic> list) async {
+    try {
+      final response = await _dio.put<bool>('/task-lists/$listId', data: list);
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_update_task_list_error: $e');
+      return false;
+    }
+  }
+
+  /// Удалить список.
+  Future<bool> deleteTaskList(String listId) async {
+    try {
+      final response = await _dio.delete<bool>('/task-lists/$listId');
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_delete_task_list_error: $e');
+      return false;
+    }
+  }
+
+  // ==================== Plan CRUD ====================
+
+  /// Загрузить один план по ID.
+  Future<Map<String, dynamic>?> fetchPlan(String planId) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/plans/$planId');
+      return response.statusCode == 200 ? response.data : null;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_fetch_plan_error: $e');
+      return null;
+    }
+  }
+
+  /// Создать новый план.
+  Future<Map<String, dynamic>?> createPlan(Map<String, dynamic> plan) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>('/plans', data: plan);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.data;
+      }
+      return null;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_create_plan_error: $e');
+      return null;
+    }
+  }
+
+  /// Обновить план.
+  Future<bool> updatePlan(String planId, Map<String, dynamic> plan) async {
+    try {
+      final response = await _dio.put<bool>('/plans/$planId', data: plan);
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_update_plan_error: $e');
+      return false;
+    }
+  }
+
+  /// Удалить план.
+  Future<bool> deletePlan(String planId) async {
+    try {
+      final response = await _dio.delete<bool>('/plans/$planId');
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_delete_plan_error: $e');
+      return false;
+    }
+  }
+
+  // ==================== Material Stock ====================
+
+  /// Загрузить снимок склада материалов.
+  Future<Map<String, dynamic>?> fetchMaterialStock() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/material-stock');
+      return response.statusCode == 200 ? response.data : null;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_fetch_material_stock_error: $e');
+      return null;
+    }
+  }
+
+  /// Полная замена склада.
+  Future<bool> updateMaterialStock(Map<String, dynamic> stock) async {
+    try {
+      final response = await _dio.put<bool>('/material-stock', data: stock);
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_update_material_stock_error: $e');
+      return false;
+    }
+  }
+
+  // ==================== Team CRUD ====================
+
+  /// Загрузить все команды.
+  Future<List<dynamic>?> fetchTeams() async {
+    try {
+      final response = await _dio.get<List<dynamic>>('/teams');
+      if (response.statusCode == 200) {
+        return response.data;
+      }
+      return null;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_fetch_teams_error: $e');
+      return null;
+    }
+  }
+
+  /// Обновить команду.
+  Future<bool> updateTeam(String teamId, Map<String, dynamic> team) async {
+    try {
+      final response = await _dio.put<bool>('/teams/$teamId', data: team);
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_update_team_error: $e');
+      return false;
+    }
+  }
+
+  /// Удалить команду.
+  Future<bool> deleteTeam(String teamId) async {
+    try {
+      final response = await _dio.delete<bool>('/teams/$teamId');
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_delete_team_error: $e');
+      return false;
+    }
+  }
+
+  /// Удалить участника из команды.
+  Future<bool> removeTeamMember({
+    required String teamId,
+    required String memberUserId,
+  }) async {
+    try {
+      final response = await _dio.delete<bool>(
+        '/teams/members',
+        data: {
+          'teamId': teamId,
+          'memberUserId': memberUserId,
+        },
+      );
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_remove_team_member_error: $e');
+      return false;
+    }
+  }
+
+  // ==================== Presigned URLs ====================
+
+  /// Получить URL для загрузки файла (presigned PUT).
+  Future<String?> generatePresignedUploadUrl({
+    required String bucket,
+    required String objectKey,
+    required String contentType,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/storage/presigned-upload',
+        data: {
+          'bucket': bucket,
+          'objectKey': objectKey,
+          'contentType': contentType,
+        },
+      );
+      if (response.statusCode == 200) {
+        return response.data?['url'] as String?;
+      }
+      return null;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_presigned_upload_error: $e');
+      return null;
+    }
+  }
+
+  /// Получить URL для скачивания файла (presigned GET).
+  Future<String?> generatePresignedDownloadUrl({
+    required String bucket,
+    required String objectKey,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/storage/presigned-download',
+        data: {
+          'bucket': bucket,
+          'objectKey': objectKey,
+        },
+      );
+      if (response.statusCode == 200) {
+        return response.data?['url'] as String?;
+      }
+      return null;
+    } on Exception catch (e) {
+      _logger.log('cloud_ru_presigned_download_error: $e');
       return null;
     }
   }

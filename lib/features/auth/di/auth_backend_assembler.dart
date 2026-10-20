@@ -5,6 +5,8 @@ import 'package:rooster/features/auth/data/yandex_id_auth_gateway_impl.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
 import 'package:rooster/features/auth/domain/gateways/i_vk_id_gateway.dart';
 import 'package:rooster/features/auth/domain/gateways/i_yandex_id_gateway.dart';
+import 'package:rooster/features/cloud_ru/api/cloud_ru_client.dart';
+import 'package:rooster/features/profile/data/teams_gateway_impl.dart';
 import 'package:rooster/features/profile/domain/entities/profile_team_card_entity.dart';
 import 'package:rooster/features/profile/domain/gateways/i_teams_gateway.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -52,8 +54,19 @@ Future<AuthBackendAssemblyResult> assembleAuthBackend({
     logger: logger,
     secureStorage: secureStorage,
   );
-  // Teams gateway is a stub for now — replace with real implementation.
-  const teamsGateway = NoopTeamsGateway();
+
+  // Teams gateway via Cloud.ru Serverless Functions
+  final cloudRuClient = CloudRuClient(
+    serverlessEndpoint: serverlessEndpoint,
+    storageEndpoint: storageEndpoint,
+    iamToken: null,
+    logger: logger,
+  );
+  final teamsGateway = TeamsGatewayImpl(
+    cloudRuClient: cloudRuClient,
+    logger: logger,
+  );
+
   return AuthBackendAssemblyResult(
     authGateway: vkIdGateway,
     vkIdGateway: vkIdGateway,
@@ -73,8 +86,17 @@ final class NoopTeamsGateway implements ITeamsGateway {
   ) async => [];
 
   @override
+  Future<Map<String, dynamic>?> loadTeamDetails(String teamId) async => null;
+
+  @override
   Future<void> createTeam({
     required String name,
+    required String currentUserId,
+  }) async {}
+
+  @override
+  Future<void> deleteTeam({
+    required String teamId,
     required String currentUserId,
   }) async {}
 
@@ -83,6 +105,39 @@ final class NoopTeamsGateway implements ITeamsGateway {
     required String teamId,
     required String email,
     required String invitationReturnUrl,
+  }) async {}
+
+  @override
+  Future<void> acceptInvitation({
+    required String invitationToken,
+  }) async {}
+
+  @override
+  Future<void> rejectInvitation({
+    required String invitationToken,
+  }) async {}
+
+  @override
+  Future<void> revokeInvitation({
+    required String teamId,
+    required String invitationId,
+  }) async {}
+
+  @override
+  Future<List<Map<String, dynamic>>> loadTeamInvitations(String teamId) async => [];
+
+  @override
+  Future<void> updateMemberRole({
+    required String teamId,
+    required String memberUserId,
+    required List<String> roles,
+  }) async {}
+
+  @override
+  Future<void> removeMember({
+    required String teamId,
+    required String memberUserId,
+    required String currentUserId,
   }) async {}
 
   @override
