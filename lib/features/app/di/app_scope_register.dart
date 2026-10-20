@@ -20,6 +20,7 @@ import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
 import 'package:rooster/features/planning/data/repositories/planning_repository_impl.dart';
 import 'package:rooster/features/profile/data/noop_profile_avatar_gateway_impl.dart';
 import 'package:rooster/features/profile/data/noop_profile_personal_data_gateway_impl.dart';
+import 'package:rooster/features/profile/domain/services/user_profile_service.dart';
 import 'package:rooster/features/tasks/data/gateways/task_local_image_gateway_io.dart';
 import 'package:rooster/features/tasks/data/gateways/task_local_image_gateway_stub.dart';
 import 'package:rooster/features/tasks/data/gateways/auth_task_change_author_provider.dart';
@@ -30,6 +31,8 @@ import 'package:rooster/features/tasks/data/repositories/material_stock_reposito
 import 'package:rooster/features/tasks/data/repositories/task_change_history_repository_impl.dart';
 import 'package:rooster/features/tasks/data/repositories/task_lists_repository_impl.dart';
 import 'package:rooster/features/tasks/data/repositories/tasks_repository_impl.dart';
+import 'package:rooster/features/tasks/data/services/task_lifecycle_service.dart';
+import 'package:rooster/features/tasks/data/services/task_persistence_service.dart';
 import 'package:rooster/features/tasks/data/storage/task_decision_hive_storage_constants.dart';
 import 'package:rooster/features/tasks/domain/decision/calculate_task_feasibility.dart';
 import 'package:rooster/features/tasks/domain/decision/default_feasibility_scoring_policy.dart';
@@ -97,14 +100,24 @@ final class AppScopeRegister {
     final taskChangeHistoryRepository = TaskChangeHistoryRepositoryImpl(
       changesBox: taskChangesBox,
     );
-    final tasksRepoImpl = TasksRepositoryImpl(
+    final taskPersistenceService = TaskPersistenceService(
       tasksBox: tasksBox,
       syncQueue: syncQueueStorage,
       syncManagerRef: syncManagerRef,
       uuid: uuid,
+    );
+    final taskLifecycleService = TaskLifecycleService(
+      analytics: null, // analytics будет передан извне при необходимости
       dueReminderGateway: dueReminderGateway,
       taskChangeHistoryWriter: taskChangeHistoryRepository,
       taskChangeAuthorProvider: taskChangeAuthorProviderRef,
+      syncManagerRef: syncManagerRef,
+      uuid: uuid,
+      syncQueue: syncQueueStorage,
+    );
+    final tasksRepoImpl = TasksRepositoryImpl(
+      persistence: taskPersistenceService,
+      lifecycle: taskLifecycleService,
     );
     final listsRepoImpl = TaskListsRepositoryImpl(
       listsBox: listsBox,
@@ -172,8 +185,13 @@ final class AppScopeRegister {
       storageEndpoint: env.storageEndpoint,
       tokenExchangeEndpoint: env.tokenExchangeEndpoint,
     );
-    taskChangeAuthorProviderRef.target = AuthTaskChangeAuthorProvider(
+    final userProfileService = UserProfileService(
       authGateway: authAssembly.authGateway,
+      profilePersonalDataGateway:
+          const NoopProfilePersonalDataGatewayImpl(),
+    );
+    taskChangeAuthorProviderRef.target = AuthTaskChangeAuthorProvider(
+      userProfileService: userProfileService,
     );
 
     final syncManager = SyncManagerImpl(
@@ -230,6 +248,7 @@ final class AppScopeRegister {
       profileAvatarGateway: const NoopProfileAvatarGatewayImpl(),
       profilePersonalDataGateway: const NoopProfilePersonalDataGatewayImpl(),
       teamsGateway: authAssembly.teamsGateway,
+      userProfileService: userProfileService,
       tasksRepository: tasksRepoImpl,
       taskListsRepository: listsRepoImpl,
       planningRepository: planningRepoImpl,
