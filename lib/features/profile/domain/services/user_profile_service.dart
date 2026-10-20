@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:elementary/elementary.dart';
+import 'package:flutter/foundation.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
 import 'package:rooster/features/profile/domain/entities/profile_entity.dart';
@@ -8,14 +8,14 @@ import 'package:rooster/features/profile/domain/entities/user_profile.dart';
 import 'package:rooster/features/profile/domain/gateways/i_profile_personal_data_gateway.dart';
 import 'package:union_state/union_state.dart';
 
-/// Сервис, предоставляющий объединённый stream-based view данных профиля пользователя.
+/// Сервис, предоставляющий value-listenable view данных профиля пользователя.
 ///
 /// Слушает изменения auth gateway и, когда пользователь авторизован,
 /// подписывается на поток cloud profile данных. Объединяет оба источника
-/// в единый `Stream<UserProfile>` с состояниями loading/content/error.
+/// в единый `ValueNotifier<UnionState<UserProfile>>` с состояниями loading/content/error.
 ///
-/// Использование: `context.read<IAppScope>().userProfileService.userProfileStream`
-final class UserProfileService extends ElementaryModel {
+/// Использование: `context.read<IAppScope>().userProfileService.userProfileState`
+final class UserProfileService {
   /// Создаёт сервис.
   UserProfileService({
     required IAuthGateway authGateway,
@@ -33,59 +33,63 @@ final class UserProfileService extends ElementaryModel {
   UserProfile? get currentProfile => _currentProfile;
   UserProfile? _currentProfile;
 
-  /// Поток состояний объединённого профиля пользователя.
+  /// Состояние объединённого профиля пользователя.
   ///
   /// Эмитирует:
   /// - `UnionStateLoading<UserProfile>` при загрузке profile данных
   /// - `UnionStateContent<UserProfile>` когда данные доступны
   /// - `UnionStateFailure<UserProfile>` при ошибках
-  late final Stream<UnionState<UserProfile>> userProfileStream;
+  final ValueNotifier<UnionState<UserProfile>> userProfileState =
+      ValueNotifier<UnionState<UserProfile>>(
+        const UnionStateLoading<UserProfile>(),
+      );
 
-  @override
+  StreamSubscription<AppAuthUserEntity?>? _authSubscription;
+
+  /// Запустить слушание изменений auth и загрузить профиль.
   void init() {
-    super.init();
-    userProfileStream = _buildUserProfileStream();
+    _authSubscription = _authGateway.authStateChanges.listen(_onAuthStateChanged);
+    // Начальная загрузка
+    unawaited(_onAuthStateChanged(_authGateway.currentUser));
   }
 
-  Stream<UnionState<UserProfile>> _buildUserProfileStream() {
-    return _authGateway.authStateChanges
-        .asyncMap<UserProfile>((authUser) async {
-      if (authUser == null) {
-        return UserProfile(
+  /// Обработка изменения состояния авторизации.
+  Future<void> _onAuthStateChanged(AppAuthUserEntity? authUser) async {
+    if (authUser == null) {
+      userProfileState.value = UnionStateContent<UserProfile>(
+        UserProfile(
           authUser: const AppAuthUserEntity(uid: '', isAnonymous: false),
-        );
-      }
-
-      // Пытаемся загрузить profile данные
-      ProfileEntity? profile;
-      try {
-        // Используем first из watch stream для начальной загрузки
-        profile = await _profilePersonalDataGateway
-            .watchPersonalData(authUser.uid)
-            .first;
-      } on UnimplementedError {
-        // Noop gateway — профиль недоступен
-        profile = null;
-      } on StateError {
-        // Stream завершился без эмиссии (Noop или пустой)
-        profile = null;
-      } catch (_) {
-        // Любая другая ошибка — profile остаётся null
-        profile = null;
-      }
-
-      return UserProfile(
-        authUser: authUser,
-        cloudProfile: profile,
+        ),
       );
-    }).map<UnionState<UserProfile>>((profile) {
-      if (profile.authUser.uid.isEmpty) {
-        // Пользователь вышел
-        return UnionStateContent<UserProfile>(profile);
-      }
-      // Профиль загружен (даже если cloudProfile == null)
-      return UnionStateContent<UserProfile>(profile);
-    }).startWith(const UnionStateLoading<UserProfile>());
+      return;
+    }
+
+    userProfileState.value = const UnionStateLoading<UserProfile>();
+
+    // Пытаемся загрузить profile данные
+    ProfileEntity? profile;
+    try {
+      // Используем first из watch stream для начальной загрузки
+      profile = await _profilePersonalDataGateway
+          .watchPersonalData(authUser.uid)
+          .first;
+    } on UnimplementedError {
+      // Noop gateway — профиль недоступен
+      profile = null;
+    } on StateError {
+      // Stream завершился без эмиссии (Noop или пустой)
+      profile = null;
+    } catch (_) {
+      // Любая другая ошибка — profile остаётся null
+      profile = null;
+    }
+
+    final userProfile = UserProfile(
+      authUser: authUser,
+      cloudProfile: profile,
+    );
+    _currentProfile = userProfile;
+    userProfileState.value = UnionStateContent<UserProfile>(userProfile);
   }
 
   /// Загрузить profile данные для конкретного пользователя (разово, например после ручного обновления).
@@ -102,6 +106,7 @@ final class UserProfileService extends ElementaryModel {
       cloudProfile: profile,
     );
     _currentProfile = updated;
+    userProfileState.value = UnionStateContent<UserProfile>(updated);
     return updated;
   }
 
@@ -122,14 +127,17 @@ final class UserProfileService extends ElementaryModel {
       final profile = await _profilePersonalDataGateway.loadPersonalData(userId);
       if (_currentProfile?.authUser.uid == userId) {
         _currentProfile = _currentProfile!.copyWith(cloudProfile: profile);
+        userProfileState.value = UnionStateContent<UserProfile>(_currentProfile!);
       }
     } on UnimplementedError {
       // Noop gateway — нечего перезагружать
     }
   }
 
-  @override
+  /// Остановить слушание и освободить ресурсы.
   void dispose() {
-    super.dispose();
+    _authSubscription?.cancel();
+    _authSubscription = null;
+    userProfileState.dispose();
   }
 }

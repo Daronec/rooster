@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
-import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
+import 'package:rooster/features/profile/domain/services/user_profile_service.dart';
 import 'package:rooster/features/profile/domain/entities/profile_team_card_entity.dart';
 import 'package:rooster/features/profile/domain/entities/profile_team_member_entity.dart';
 import 'package:rooster/features/profile/domain/gateways/i_teams_gateway.dart';
@@ -34,7 +34,7 @@ final class CreateTaskScreenModel extends ElementaryModel {
     required CompleteTaskAndConsumeStockMaterialsUseCase
     completeTaskAndConsumeStockMaterialsUseCase,
     required ITaskLocalImageGateway taskLocalImageGateway,
-    required IAuthGateway authGateway,
+    required UserProfileService userProfileService,
     required ITeamsGateway teamsGateway,
     required Uuid uuid,
     this.editingTaskId,
@@ -47,7 +47,7 @@ final class CreateTaskScreenModel extends ElementaryModel {
        _completeTaskAndConsumeStockMaterialsUseCase =
            completeTaskAndConsumeStockMaterialsUseCase,
        _taskLocalImageGateway = taskLocalImageGateway,
-       _authGateway = authGateway,
+       _userProfileService = userProfileService,
        _teamsGateway = teamsGateway,
        _uuid = uuid;
 
@@ -69,14 +69,14 @@ final class CreateTaskScreenModel extends ElementaryModel {
   final CompleteTaskAndConsumeStockMaterialsUseCase
   _completeTaskAndConsumeStockMaterialsUseCase;
   final ITaskLocalImageGateway _taskLocalImageGateway;
-  final IAuthGateway _authGateway;
+  final UserProfileService _userProfileService;
   final ITeamsGateway _teamsGateway;
   final Uuid _uuid;
 
   StreamSubscription<List<TaskEntity>>? _tasksSubscription;
 
   /// Текущий пользователь, если есть активная сессия.
-  AppAuthUserEntity? get currentUser => _authGateway.currentUser;
+  AppAuthUserEntity? get currentUser => _userProfileService.currentAuthUser;
 
   /// Состояние загрузки списков задач ([UnionStateListenable] с элементами [TaskListEntity]).
   final ValueNotifier<UnionState<List<TaskListEntity>>> listsState =
@@ -176,7 +176,7 @@ final class CreateTaskScreenModel extends ElementaryModel {
 
   /// Загрузить участников из команд пользователя.
   Future<void> loadParticipantsFromTeams() async {
-    final user = _authGateway.currentUser;
+    final user = _userProfileService.currentAuthUser;
     if (user == null || user.isAnonymous) {
       participantsListenable.value = const <TaskParticipantEntity>[];
       participantsLoadingListenable.value = false;

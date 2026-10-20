@@ -1,14 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
-import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
+import 'package:rooster/features/profile/domain/entities/profile_entity.dart';
+import 'package:rooster/features/profile/domain/entities/user_profile.dart';
+import 'package:rooster/features/profile/domain/services/user_profile_service.dart';
 import 'package:rooster/features/tasks/data/gateways/auth_task_change_author_provider.dart';
 
 void main() {
   group('AuthTaskChangeAuthorProvider', () {
     test('возвращает displayName текущего пользователя', () {
-      final provider = AuthTaskChangeAuthorProvider(
-        authGateway: _FakeAuthGateway(
-          currentUser: const AppAuthUserEntity(
+      final service = _FakeUserProfileService(
+        userProfile: const UserProfile(
+          authUser: AppAuthUserEntity(
             uid: 'user-1',
             isAnonymous: false,
             email: 'user@example.com',
@@ -17,13 +18,17 @@ void main() {
         ),
       );
 
+      final provider = AuthTaskChangeAuthorProvider(
+        userProfileService: service,
+      );
+
       expect(provider.currentAuthorName, 'Дарон');
     });
 
     test('использует email, если имя пользователя не задано', () {
-      final provider = AuthTaskChangeAuthorProvider(
-        authGateway: _FakeAuthGateway(
-          currentUser: const AppAuthUserEntity(
+      final service = _FakeUserProfileService(
+        userProfile: const UserProfile(
+          authUser: AppAuthUserEntity(
             uid: 'user-1',
             isAnonymous: false,
             email: 'user@example.com',
@@ -31,29 +36,47 @@ void main() {
         ),
       );
 
+      final provider = AuthTaskChangeAuthorProvider(
+        userProfileService: service,
+      );
+
       expect(provider.currentAuthorName, 'user@example.com');
+    });
+
+    test('возвращает null для неавторизованного пользователя', () {
+      final service = _FakeUserProfileService(
+        userProfile: UserProfile(
+          authUser: const AppAuthUserEntity(uid: '', isAnonymous: false),
+        ),
+      );
+
+      final provider = AuthTaskChangeAuthorProvider(
+        userProfileService: service,
+      );
+
+      expect(provider.currentAuthorName, isNull);
+    });
+
+    test('возвращает null когда профиль ещё не загружен', () {
+      final service = _FakeUserProfileService(userProfile: null);
+
+      final provider = AuthTaskChangeAuthorProvider(
+        userProfileService: service,
+      );
+
+      expect(provider.currentAuthorName, isNull);
     });
   });
 }
 
-final class _FakeAuthGateway implements IAuthGateway {
-  _FakeAuthGateway({required AppAuthUserEntity? currentUser})
-    : _currentUser = currentUser;
+/// Composition-based fake для UserProfileService.
+///
+/// UserProfileService — final class, поэтому его нельзя реализовать через implements.
+final class _FakeUserProfileService {
+  _FakeUserProfileService({required UserProfile? userProfile})
+      : _userProfile = userProfile;
 
-  final AppAuthUserEntity? _currentUser;
+  final UserProfile? _userProfile;
 
-  @override
-  Stream<AppAuthUserEntity?> get authStateChanges =>
-      Stream<AppAuthUserEntity?>.value(_currentUser);
-
-  @override
-  AppAuthUserEntity? get currentUser => _currentUser;
-
-  @override
-  Future<void> signOut() async {
-    // coverage:ignore-line
-    throw UnimplementedError();
-  }
-
-
+  UserProfile? get currentProfile => _userProfile;
 }
