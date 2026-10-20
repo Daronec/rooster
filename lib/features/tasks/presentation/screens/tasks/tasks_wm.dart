@@ -76,9 +76,6 @@ class TasksScreenWidgetModel
       final pinned = <TaskEntity>[];
       final unpinned = <TaskEntity>[];
       for (final task in tasks) {
-        if (task.status == TaskStatusEntity.archived) {
-          continue;
-        }
         if (task.isPinned) {
           pinned.add(task);
         } else {

@@ -36,6 +36,7 @@ TasksScreenWidgetModel tasksScreenWidgetModelFactory(BuildContext context) {
           scope.listBlockedTasksWithReasonsUseCase,
       completeTaskAndConsumeStockMaterialsUseCase:
           scope.completeTaskAndConsumeStockMaterialsUseCase,
+      watchActiveTasksUseCase: scope.watchActiveTasksUseCase,
     ),
     snackController: SnackQueueProvider.of(context),
     logWriter: scope.logger,

@@ -34,9 +34,12 @@ import 'package:rooster/features/tasks/data/storage/task_decision_hive_storage_c
 import 'package:rooster/features/tasks/domain/decision/calculate_task_feasibility.dart';
 import 'package:rooster/features/tasks/domain/decision/default_feasibility_scoring_policy.dart';
 import 'package:rooster/features/tasks/domain/use_cases/complete_task_and_consume_stock_materials_use_case.dart';
+import 'package:rooster/features/tasks/domain/use_cases/delete_task_use_case.dart';
 import 'package:rooster/features/tasks/domain/use_cases/list_blocked_tasks_with_reasons_use_case.dart';
 import 'package:rooster/features/tasks/domain/use_cases/list_today_ready_tasks_use_case.dart';
+import 'package:rooster/features/tasks/domain/use_cases/save_task_use_case.dart';
 import 'package:rooster/features/tasks/domain/use_cases/resolve_task_feasibility_use_case.dart';
+import 'package:rooster/features/tasks/domain/use_cases/watch_active_tasks_use_case.dart';
 import 'package:rooster/features/tasks/data/storage/tasks_screen_expanded_group_storage_impl.dart';
 import 'package:rooster/features/tasks/domain/entities/task_list_entity.dart';
 import 'package:rooster/features/tasks/domain/task_ids.dart';
@@ -148,6 +151,10 @@ final class AppScopeRegister {
           tasksRepository: tasksRepoImpl,
           materialStockRepository: materialStockRepoImpl,
         );
+    final saveTaskUseCase = SaveTaskUseCase(tasksRepository: tasksRepoImpl);
+    final deleteTaskUseCase = DeleteTaskUseCase(tasksRepository: tasksRepoImpl);
+    final watchActiveTasksUseCase =
+        WatchActiveTasksUseCase(tasksRepository: tasksRepoImpl);
 
     const taskLocalImageGateway = kIsWeb
         ? TaskLocalImageGatewayStub()
@@ -211,6 +218,10 @@ final class AppScopeRegister {
       localNotificationsPlugin: localNotificationsPlugin,
       tokenStorage: tokenStorage,
       pinCodeStorage: pinCodeStorage,
+      syncQueue: syncQueueStorage,
+      syncManager: syncManager,
+      syncEngineListenable: syncManager,
+      connectivityGateway: connectivity,
       authBackendStrategy: AuthBackendStrategy.vkId,
       isLikelyHuaweiOrHonorAndroidForAuthUi: false,
       authGateway: authAssembly.authGateway,
@@ -230,14 +241,13 @@ final class AppScopeRegister {
       listBlockedTasksWithReasonsUseCase: listBlockedTasksWithReasonsUseCase,
       completeTaskAndConsumeStockMaterialsUseCase:
           completeTaskAndConsumeStockMaterialsUseCase,
+      saveTaskUseCase: saveTaskUseCase,
+      deleteTaskUseCase: deleteTaskUseCase,
+      watchActiveTasksUseCase: watchActiveTasksUseCase,
       tasksScreenExpandedGroupStorage: TasksScreenExpandedGroupStorageImpl(
         sharedPreferences,
       ),
       taskLocalImageGateway: taskLocalImageGateway,
-      syncQueue: syncQueueStorage,
-      syncManager: syncManager,
-      syncEngineListenable: syncManager,
-      connectivityGateway: connectivity,
       localLLMGateway: localLLMGateway,
     );
   }

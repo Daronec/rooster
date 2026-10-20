@@ -1,3 +1,7 @@
+import 'package:rooster/features/app/di/core_scope.dart';
+import 'package:rooster/features/tasks/di/tasks_scope.dart';
+import 'package:rooster/features/ai/domain/gateways/i_local_llm_gateway.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:rooster/common/utils/logger/i_log_writer.dart';
@@ -21,39 +25,28 @@ import 'package:rooster/features/tasks/domain/repositories/i_task_change_history
 import 'package:rooster/features/tasks/domain/repositories/i_task_lists_repository.dart';
 import 'package:rooster/features/tasks/domain/repositories/i_tasks_repository.dart';
 import 'package:rooster/features/tasks/domain/use_cases/complete_task_and_consume_stock_materials_use_case.dart';
+import 'package:rooster/features/tasks/domain/use_cases/delete_task_use_case.dart';
 import 'package:rooster/features/tasks/domain/use_cases/list_blocked_tasks_with_reasons_use_case.dart';
 import 'package:rooster/features/tasks/domain/use_cases/list_today_ready_tasks_use_case.dart';
+import 'package:rooster/features/tasks/domain/use_cases/save_task_use_case.dart';
 import 'package:rooster/features/tasks/domain/use_cases/resolve_task_feasibility_use_case.dart';
-
-import 'package:rooster/features/ai/domain/gateways/i_local_llm_gateway.dart';
+import 'package:rooster/features/tasks/domain/use_cases/watch_active_tasks_use_case.dart';
 import 'package:rooster/integration/network/connectivity_gateway.dart';
 import 'package:rooster/persistence/storage/pin_code_storage/i_pin_code_storage.dart';
 import 'package:rooster/persistence/storage/tokens_storage/token_storage_impl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// {@template app_scope.class}
 /// Корневой scope приложения (Task Manager + синхронизация).
-abstract interface class IAppScope {
-  /// Окружение.
-  Environment get env;
-
-  /// Конфиг приложения.
-  AppConfig get appConfig;
-
-  /// SharedPreferences.
-  SharedPreferences get sharedPreferences;
-
-  /// Логгер.
-  ILogWriter get logger;
-
-  /// Локальные уведомления (плагин).
-  FlutterLocalNotificationsPlugin get localNotificationsPlugin;
-
-  /// Токены (secure).
-  ITokenStorage get tokenStorage;
-
-  /// PIN-хранилище (наследие инфраструктуры; можно отключить в UI).
-  IPinCodeStorage get pinCodeStorage;
-
+///
+/// Для соблюдения Interface Segregation Principle (ISP):
+/// - [ICoreScope] — только инфраструктура (логгер, хранение, синк)
+/// - [ITasksScope] — все task-зависимости
+/// - [IAppScope] — полный интерфейс (для обратной совместимости)
+///
+/// [AppScope] реализует все три интерфейса.
+/// {@endtemplate}
+abstract interface class IAppScope implements ICoreScope, ITasksScope {
   /// Выбранная стратегия облака/входа (см. docs/AUTH_DUAL_STRATEGY_PLAN.md).
   AuthBackendStrategy get authBackendStrategy;
 
@@ -78,61 +71,16 @@ abstract interface class IAppScope {
   /// Команды пользователя.
   ITeamsGateway get teamsGateway;
 
-  /// Задачи.
-  ITasksRepository get tasksRepository;
-
-  /// Списки задач.
-  ITaskListsRepository get taskListsRepository;
-
   /// Планы.
   IPlanningRepository get planningRepository;
 
-  /// История изменений задач.
-  ITaskChangeHistoryRepository get taskChangeHistoryRepository;
-
-  /// Локальный бюджет периода (Hive, без sync queue).
-  IBudgetRepository get budgetRepository;
-
-  /// Локальный склад материалов (Hive, без sync queue).
-  IMaterialStockRepository get materialStockRepository;
-
-  /// Расчёт выполнимости одной задачи с загрузкой бюджета/склада.
-  ResolveTaskFeasibilityUseCase get resolveTaskFeasibilityUseCase;
-
-  /// Топ готовых задач («Сегодня»).
-  ListTodayReadyTasksUseCase get listTodayReadyTasksUseCase;
-
-  /// Заблокированные задачи с причинами.
-  ListBlockedTasksWithReasonsUseCase get listBlockedTasksWithReasonsUseCase;
-
-  /// Завершение задачи с списанием материалов со склада.
-  CompleteTaskAndConsumeStockMaterialsUseCase
-  get completeTaskAndConsumeStockMaterialsUseCase;
-
-  /// Память развёрнутой группы на экране задач.
-  ITasksScreenExpandedGroupStorage get tasksScreenExpandedGroupStorage;
-
-  /// Локальное сохранение вложений задач (копирование в каталог приложения).
-  ITaskLocalImageGateway get taskLocalImageGateway;
-
-  /// Очередь синхронизации (dev / диагностика).
-  ISyncQueue get syncQueue;
-
-  /// Менеджер синхронизации.
-  ISyncManager get syncManager;
-
-  /// [Listenable] статуса синка ([ChangeNotifier] реализации менеджера).
-  Listenable get syncEngineListenable;
-
-  /// Сеть.
-  IConnectivityGateway get connectivityGateway;
-
   /// Локальная LLM-модель (опционально, может быть null).
   ILocalLLMGateway? get localLLMGateway;
-
 }
 
-/// Реализация [IAppScope].
+/// {@template app_scope_impl.class}
+/// Реализация [IAppScope], [ICoreScope] и [ITasksScope].
+/// {@endtemplate}
 final class AppScope implements IAppScope {
   /// Создаёт scope.
   const AppScope({
@@ -143,6 +91,10 @@ final class AppScope implements IAppScope {
     required this.localNotificationsPlugin,
     required this.tokenStorage,
     required this.pinCodeStorage,
+    required this.syncQueue,
+    required this.syncManager,
+    required this.syncEngineListenable,
+    required this.connectivityGateway,
     required this.authBackendStrategy,
     required this.isLikelyHuaweiOrHonorAndroidForAuthUi,
     required this.authGateway,
@@ -161,15 +113,15 @@ final class AppScope implements IAppScope {
     required this.listTodayReadyTasksUseCase,
     required this.listBlockedTasksWithReasonsUseCase,
     required this.completeTaskAndConsumeStockMaterialsUseCase,
+    required this.saveTaskUseCase,
+    required this.deleteTaskUseCase,
+    required this.watchActiveTasksUseCase,
     required this.tasksScreenExpandedGroupStorage,
     required this.taskLocalImageGateway,
-    required this.syncQueue,
-    required this.syncManager,
-    required this.syncEngineListenable,
-    required this.connectivityGateway,
     required this.localLLMGateway,
   });
 
+  // ICoreScope properties
   @override
   final Environment env;
 
@@ -191,6 +143,19 @@ final class AppScope implements IAppScope {
   @override
   final IPinCodeStorage pinCodeStorage;
 
+  @override
+  final ISyncQueue syncQueue;
+
+  @override
+  final ISyncManager syncManager;
+
+  @override
+  final Listenable syncEngineListenable;
+
+  @override
+  final IConnectivityGateway connectivityGateway;
+
+  // IAppScope properties
   @override
   final AuthBackendStrategy authBackendStrategy;
 
@@ -216,13 +181,17 @@ final class AppScope implements IAppScope {
   final ITeamsGateway teamsGateway;
 
   @override
+  final IPlanningRepository planningRepository;
+
+  @override
+  final ILocalLLMGateway? localLLMGateway;
+
+  // ITasksScope properties
+  @override
   final ITasksRepository tasksRepository;
 
   @override
   final ITaskListsRepository taskListsRepository;
-
-  @override
-  final IPlanningRepository planningRepository;
 
   @override
   final ITaskChangeHistoryRepository taskChangeHistoryRepository;
@@ -247,24 +216,22 @@ final class AppScope implements IAppScope {
   completeTaskAndConsumeStockMaterialsUseCase;
 
   @override
+  final SaveTaskUseCase saveTaskUseCase;
+
+  @override
+  final DeleteTaskUseCase deleteTaskUseCase;
+
+  @override
+  final WatchActiveTasksUseCase watchActiveTasksUseCase;
+
+  @override
   final ITasksScreenExpandedGroupStorage tasksScreenExpandedGroupStorage;
 
   @override
   final ITaskLocalImageGateway taskLocalImageGateway;
 
   @override
-  final ISyncQueue syncQueue;
-
-  @override
-  final ISyncManager syncManager;
-
-  @override
-  final Listenable syncEngineListenable;
-
-  @override
-  final IConnectivityGateway connectivityGateway;
-
-  @override
-  final ILocalLLMGateway? localLLMGateway;
-
+  void dispose() {
+    // Lifetime управляется на уровне приложения.
+  }
 }

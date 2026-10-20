@@ -5,13 +5,13 @@ import 'package:flutter/foundation.dart';
 import 'package:rooster/features/tasks/domain/decision/task_feasibility_list_entry_entity.dart';
 import 'package:rooster/features/tasks/domain/entities/task_entity.dart';
 import 'package:rooster/features/tasks/domain/entities/task_list_entity.dart';
-import 'package:rooster/features/tasks/domain/entities/task_status_entity.dart';
 import 'package:rooster/features/tasks/domain/gateways/i_tasks_screen_expanded_group_storage.dart';
 import 'package:rooster/features/tasks/domain/repositories/i_task_lists_repository.dart';
 import 'package:rooster/features/tasks/domain/repositories/i_tasks_repository.dart';
 import 'package:rooster/features/tasks/domain/use_cases/list_blocked_tasks_with_reasons_use_case.dart';
 import 'package:rooster/features/tasks/domain/use_cases/list_today_ready_tasks_use_case.dart';
 import 'package:rooster/features/tasks/domain/use_cases/complete_task_and_consume_stock_materials_use_case.dart';
+import 'package:rooster/features/tasks/domain/use_cases/watch_active_tasks_use_case.dart';
 import 'package:rooster/util/union_state/empty_screen_body.dart';
 import 'package:union_state/union_state.dart';
 
@@ -27,6 +27,7 @@ final class TasksScreenModel extends ElementaryModel {
         listBlockedTasksWithReasonsUseCase,
     required CompleteTaskAndConsumeStockMaterialsUseCase
         completeTaskAndConsumeStockMaterialsUseCase,
+    required WatchActiveTasksUseCase watchActiveTasksUseCase,
   }) : _tasksRepository = tasksRepository,
        _taskListsRepository = taskListsRepository,
        _expandedGroupStorage = expandedGroupStorage,
@@ -34,7 +35,8 @@ final class TasksScreenModel extends ElementaryModel {
        _listBlockedTasksWithReasonsUseCase =
            listBlockedTasksWithReasonsUseCase,
        _completeTaskAndConsumeStockMaterialsUseCase =
-           completeTaskAndConsumeStockMaterialsUseCase;
+           completeTaskAndConsumeStockMaterialsUseCase,
+       _watchActiveTasksUseCase = watchActiveTasksUseCase;
 
   final ITasksRepository _tasksRepository;
   final ITaskListsRepository _taskListsRepository;
@@ -43,6 +45,7 @@ final class TasksScreenModel extends ElementaryModel {
   final ListBlockedTasksWithReasonsUseCase _listBlockedTasksWithReasonsUseCase;
   final CompleteTaskAndConsumeStockMaterialsUseCase
       _completeTaskAndConsumeStockMaterialsUseCase;
+  final WatchActiveTasksUseCase _watchActiveTasksUseCase;
 
   StreamSubscription<List<TaskEntity>>? _tasksSubscription;
   StreamSubscription<List<TaskListEntity>>? _listsSubscription;
@@ -106,15 +109,9 @@ final class TasksScreenModel extends ElementaryModel {
   void _subscribeTasks() {
     _tasksSubscription?.cancel();
     bodyState.loading();
-    _tasksSubscription = _tasksRepository.watchTasks().listen(
+    _tasksSubscription = _watchActiveTasksUseCase().listen(
       (tasks) {
-        tasksListenable.value = tasks
-            .where((task) => task.parentTaskId == null || task.parentTaskId!.isEmpty)
-            .where(
-              (task) =>
-                  task.status != TaskStatusEntity.archived,
-            )
-            .toList(growable: false);
+        tasksListenable.value = tasks;
         bodyState.content(EmptyScreenBody.instance);
         _reconcileExpandedGroup();
         if (kDebugMode) {
