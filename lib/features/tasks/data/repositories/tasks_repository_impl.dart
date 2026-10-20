@@ -24,7 +24,6 @@ final class TasksRepositoryImpl implements ITasksRepository {
   Future<TaskEntity?> loadTask(String taskId) => _persistence.loadTask(taskId);
 
   /// Для облачного [ISyncRemoteExecutor]: загрузить задачу из Hive.
-  @override
   Future<TaskEntity?> loadTaskById(String taskId) => _persistence.loadTask(taskId);
 
   @override
@@ -56,7 +55,6 @@ final class TasksRepositoryImpl implements ITasksRepository {
     await _persistence.mergeRemoteTaskIfNewer(remote);
   }
 
-  @override
   Future<void> markTaskSyncedAfterRemotePush(String taskId) async {
     await _persistence.markTaskSyncedAfterRemotePush(taskId);
   }

@@ -9,9 +9,6 @@ import 'package:rooster/core/architecture/presentation/base_widget_model.dart';
 import 'package:rooster/features/app/di/app_scope.dart';
 import 'package:rooster/features/auth/data/services/social_auth_service_types.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
-import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
-import 'package:rooster/features/auth/domain/gateways/i_vk_id_gateway.dart';
-import 'package:rooster/features/auth/domain/gateways/i_yandex_id_gateway.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_model.dart';
 import 'package:rooster/features/auth/presentation/screens/auth/auth_screen.dart';
 import 'package:rooster/features/navigation/root_main_app_route.dart'
@@ -28,15 +25,7 @@ class AuthScreenWidgetModel
   });
 
   StreamSubscription<AppAuthUserEntity?>? _authSub;
-
-  /// Gateway для входа через VK ID (через model).
-  IVkIdGateway get vkIdGateway => model.vkIdGateway;
-
-  /// Gateway для входа через Yandex ID (через model).
-  IYandexIdGateway get yandexIdGateway => model.yandexIdGateway;
-
-  /// Основной шлюз авторизации (через model).
-  IAuthGateway get authGateway => model.authGateway;
+  bool _isNavigating = false;
 
   /// Текст вступления под выбранную стратегию авторизации.
   String get introTranslationKey => model.introTranslationKey;
@@ -44,14 +33,24 @@ class AuthScreenWidgetModel
   @override
   void initWidgetModel() {
     super.initWidgetModel();
-    if (model.hasSession) {
-      _navigateMain();
-    }
-    _authSub = model.authStateChanges.listen((sessionUser) {
-      if (sessionUser != null) {
-        _navigateMain();
-      }
-    });
+    debugPrint(
+      'AuthScreenWidgetModel: initWidgetModel hasSession=${model.hasSession}',
+    );
+    _authSub = model.authStateChanges.listen(
+      (sessionUser) {
+        debugPrint(
+          'AuthScreenWidgetModel: authStateChanges received user=${sessionUser?.uid ?? "null"}',
+        );
+        if (sessionUser != null && !_isNavigating) {
+          _navigateMain();
+        }
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        debugPrint(
+          'AuthScreenWidgetModel: authStateChanges error: $error',
+        );
+      },
+    );
   }
 
   @override
@@ -63,7 +62,7 @@ class AuthScreenWidgetModel
   /// Вход через VK ID.
   Future<void> onVkIdTap() async {
     try {
-      await vkIdGateway.signInWithVkId();
+      await model.signInWithVkId();
     } on SocialAuthCanceledException {
       // User cancelled -- silent return, no snack
       return;
@@ -78,7 +77,7 @@ class AuthScreenWidgetModel
   /// Вход через Yandex ID.
   Future<void> onYandexIdTap() async {
     try {
-      await yandexIdGateway.signInWithYandexId();
+      await model.signInWithYandexId();
     } on SocialAuthCanceledException {
       // User cancelled -- silent return, no snack
       return;
@@ -94,6 +93,7 @@ class AuthScreenWidgetModel
   }
 
   void _navigateMain() {
+    debugPrint('AuthScreenWidgetModel: _navigateMain called');
     late final bool isDesktopLayout;
     late final IAppScope appScope;
     late final StackRouter rootStackRouter;
@@ -102,13 +102,19 @@ class AuthScreenWidgetModel
       appScope = context.read<IAppScope>();
       rootStackRouter = context.router.root;
     } on Object {
+      debugPrint('AuthScreenWidgetModel: _navigateMain failed to get context');
       return;
     }
+    _isNavigating = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
+      debugPrint('AuthScreenWidgetModel: navigating to main app (profile)');
       unawaited(appScope.syncManager.requestSync());
+      // Navigate to main app with profile, replacing auth flow
       rootStackRouter.replaceAll(
         rootMainAppStackOpenProfileRoutes(isDesktop: isDesktopLayout),
       );
+      debugPrint('AuthScreenWidgetModel: navigation completed');
     });
   }
 }

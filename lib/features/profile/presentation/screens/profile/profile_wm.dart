@@ -78,10 +78,14 @@ class ProfileScreenWidgetModel
   void initWidgetModel() {
     super.initWidgetModel();
     profileDisplayNameEditController = TextEditingController();
-    profileUserNotifier.value = model.user;
-    unawaited(_syncLocalAvatarDisplay(model.user));
-    model.bindPersonalDataForUser(model.user);
-    unawaited(model.refreshTeams(model.user));
+    // Инициализируем из модели (может быть уже восстановлена сессия из Yandex)
+    final initialUser = model.user;
+    profileUserNotifier.value = initialUser;
+    unawaited(_syncLocalAvatarDisplay(initialUser));
+    model.bindPersonalDataForUser(initialUser);
+    unawaited(model.refreshTeams(initialUser));
+    // Обновляем данные профиля из Yandex при входе в профиль
+    unawaited(model.refreshUserFromYandex());
     _authSubscription = model.authStateChanges.listen((user) {
       profileUserNotifier.value = user;
       unawaited(_syncLocalAvatarDisplay(user));

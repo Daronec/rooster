@@ -8,6 +8,9 @@ abstract interface class IYandexIdGateway {
   /// Launch Yandex ID OAuth flow.
   Future<void> signInWithYandexId();
 
+  /// Refresh user profile data (avatar, phone, birthday, etc.) from Yandex API.
+  Future<void> refreshUserProfile();
+
   /// Whether Yandex ID is available on this device.
   bool get isYandexIdAvailable;
 

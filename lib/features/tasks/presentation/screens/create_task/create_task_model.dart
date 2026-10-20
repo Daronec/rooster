@@ -34,7 +34,7 @@ final class CreateTaskScreenModel extends ElementaryModel {
     required CompleteTaskAndConsumeStockMaterialsUseCase
     completeTaskAndConsumeStockMaterialsUseCase,
     required ITaskLocalImageGateway taskLocalImageGateway,
-    required UserProfileService userProfileService,
+    required IUserProfileService userProfileService,
     required ITeamsGateway teamsGateway,
     required Uuid uuid,
     this.editingTaskId,
@@ -69,7 +69,7 @@ final class CreateTaskScreenModel extends ElementaryModel {
   final CompleteTaskAndConsumeStockMaterialsUseCase
   _completeTaskAndConsumeStockMaterialsUseCase;
   final ITaskLocalImageGateway _taskLocalImageGateway;
-  final UserProfileService _userProfileService;
+  final IUserProfileService _userProfileService;
   final ITeamsGateway _teamsGateway;
   final Uuid _uuid;
 

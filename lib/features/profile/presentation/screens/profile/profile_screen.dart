@@ -33,6 +33,7 @@ ProfileScreenWidgetModel profileScreenWidgetModelFactory(BuildContext context) {
       profileAvatarGateway: scope.profileAvatarGateway,
       profilePersonalDataGateway: scope.profilePersonalDataGateway,
       teamsGateway: scope.teamsGateway,
+      yandexIdGateway: scope.yandexIdGateway,
     ),
     snackController: SnackQueueProvider.of(context),
     logWriter: scope.logger,

@@ -1,4 +1,5 @@
 import 'package:elementary/elementary.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:rooster/features/auth/data/services/social_auth_service.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
@@ -35,13 +36,28 @@ final class AuthScreenModel extends ElementaryModel {
   /// Social auth facade for sign-in flows.
   SocialAuthService get socialAuthService => _socialAuthService;
 
-  /// Поток смены пользователя.
+  /// Объединённый поток смены пользователя от всех social auth gateway.
   Stream<AppAuthUserEntity?> get authStateChanges =>
-      _authGateway.authStateChanges;
+      MergeStream([
+        _authGateway.authStateChanges,
+        _yandexIdGateway.authStateChanges,
+      ]);
 
   /// Текущий пользователь (если сессия восстановлена).
-  bool get hasSession => _authGateway.currentUser != null;
+  bool get hasSession =>
+      _authGateway.currentUser != null ||
+      _yandexIdGateway.currentUser != null;
 
   /// Ключ строки вступления на экране входа.
   String get introTranslationKey => 'auth.introSyncWithCloud';
+
+  /// Вход через VK ID.
+  Future<void> signInWithVkId() async {
+    await _vkIdGateway.signInWithVkId();
+  }
+
+  /// Вход через Yandex ID.
+  Future<void> signInWithYandexId() async {
+    await _yandexIdGateway.signInWithYandexId();
+  }
 }

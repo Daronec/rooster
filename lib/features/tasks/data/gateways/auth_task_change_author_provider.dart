@@ -5,10 +5,10 @@ import 'package:rooster/features/tasks/domain/gateways/i_task_change_author_prov
 final class AuthTaskChangeAuthorProvider implements ITaskChangeAuthorProvider {
   /// Создаёт источник.
   const AuthTaskChangeAuthorProvider({
-    required UserProfileService userProfileService,
+    required IUserProfileService userProfileService,
   }) : _userProfileService = userProfileService;
 
-  final UserProfileService _userProfileService;
+  final IUserProfileService _userProfileService;
 
   @override
   String? get currentAuthorName {

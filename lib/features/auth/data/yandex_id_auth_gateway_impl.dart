@@ -34,6 +34,10 @@ final class YandexIdAuthGatewayImpl
   static const _yandexUserIdKey = 'oauth_yandex_user_id';
   static const _yandexUserEmailKey = 'oauth_yandex_user_email';
   static const _yandexUserNameKey = 'oauth_yandex_user_name';
+  static const _yandexUserAvatarUrlKey = 'oauth_yandex_user_avatar_url';
+  static const _yandexUserPhoneKey = 'oauth_yandex_user_phone';
+  static const _yandexUserBirthdayKey = 'oauth_yandex_user_birthday';
+  static const _yandexUserSexKey = 'oauth_yandex_user_sex';
 
   final BehaviorSubject<AppAuthUserEntity?> _subject =
       BehaviorSubject<AppAuthUserEntity?>.seeded(null);
@@ -64,18 +68,42 @@ final class YandexIdAuthGatewayImpl
           (user.emails.isNotEmpty ? user.emails.first : null) ??
           '${user.login.isNotEmpty ? user.login : 'yandex-${user.id}'}@yandex.local';
 
-      return SocialAuthResult(
+      final displayName =
+          _nonEmpty(user.displayName ?? '') ??
+          _nonEmpty(user.realName ?? '') ??
+          _displayName([user.firstName, user.lastName]) ??
+          _nonEmpty(user.login);
+
+      // Собираем телефон
+      final phone = user.defaultPhone?.number;
+
+      // Собираем дату рождения
+      final birthday = user.birthday?.isNotEmpty == true ? user.birthday : null;
+
+      // Собираем пол
+      final sex = user.sex?.isNotEmpty == true ? user.sex : null;
+
+      final result = SocialAuthResult(
         provider: provider,
         subject: user.id,
         email: email,
-        phone: user.defaultPhone?.number,
-        displayName:
-            _nonEmpty(user.displayName ?? '') ??
-            _nonEmpty(user.realName ?? '') ??
-            _displayName([user.firstName, user.lastName]) ??
-            _nonEmpty(user.login),
+        phone: phone,
+        displayName: displayName,
         accessToken: loginResult.token,
       );
+
+      // Сохраняем сессию после успешной авторизации
+      await _saveUserSession(
+        userId: user.id,
+        email: email,
+        displayName: displayName,
+        accessToken: loginResult.token,
+        phone: phone,
+        birthday: birthday,
+        sex: sex,
+      );
+
+      return result;
     } on YandexAuthCancelledException {
       throw const SocialAuthCanceledException();
     }
@@ -143,11 +171,25 @@ final class YandexIdAuthGatewayImpl
           ? null
           : [firstName, lastName].whereType<String>().join(' ').trim();
 
+      // Собираем телефон
+      final phone = userInfo.defaultPhone?.number;
+
+      // Собираем дату рождения
+      final birthday = userInfo.birthday?.isNotEmpty == true
+          ? userInfo.birthday
+          : null;
+
+      // Собираем пол
+      final sex = userInfo.sex?.isNotEmpty == true ? userInfo.sex : null;
+
       await _saveUserSession(
         userId: userInfo.id,
         email: email,
         displayName: displayName,
         accessToken: loginResult.token,
+        phone: phone,
+        birthday: birthday,
+        sex: sex,
       );
 
       _logger.log('yandex_id_auth_complete user=${userInfo.id}');
@@ -164,6 +206,85 @@ final class YandexIdAuthGatewayImpl
       _logger.log('yandex_id_auth_error: $e');
       debugPrint('YandexIdAuthGatewayImpl: Yandex ID OAuth error: $e');
       rethrow;
+    }
+  }
+
+  @override
+  Future<void> refreshUserProfile() async {
+    final currentUser = _currentUser;
+    if (currentUser == null) {
+      debugPrint(
+        'YandexIdAuthGatewayImpl: no current user for profile refresh',
+      );
+      return;
+    }
+
+    try {
+      debugPrint('YandexIdAuthGatewayImpl: refreshing user profile...');
+      _logger.log('yandex_id_profile_refresh_start');
+
+      // Получаем токен из хранилища
+      final accessToken = await _secureStorage.read(
+        key: _yandexAccessTokenKey,
+      );
+      if (accessToken == null || accessToken.isEmpty) {
+        _logger.log('yandex_id_profile_refresh_no_token');
+        debugPrint(
+          'YandexIdAuthGatewayImpl: no access token for profile refresh',
+        );
+        return;
+      }
+
+      // Запрашиваем обновлённый профиль из Yandex
+      final userInfo = await YandexLoginSdk.getUserInfo(token: accessToken);
+
+      final email = userInfo.defaultEmail?.isNotEmpty == true
+          ? userInfo.defaultEmail
+          : (userInfo.emails.isNotEmpty ? userInfo.emails.first : null);
+
+      final firstName = userInfo.firstName?.isNotEmpty == true
+          ? userInfo.firstName
+          : null;
+      final lastName = userInfo.lastName?.isNotEmpty == true
+          ? userInfo.lastName
+          : null;
+      final displayName =
+          [firstName, lastName].whereType<String>().join(' ').trim().isEmpty
+          ? null
+          : [firstName, lastName].whereType<String>().join(' ').trim();
+
+      // Собираем телефон
+      final phone = userInfo.defaultPhone?.number;
+
+      // Собираем дату рождения
+      final birthday = userInfo.birthday?.isNotEmpty == true
+          ? userInfo.birthday
+          : null;
+
+      // Собираем пол
+      final sex = userInfo.sex?.isNotEmpty == true ? userInfo.sex : null;
+
+      // Обновляем сессию с новыми данными
+      await _saveUserSession(
+        userId: userInfo.id,
+        email: email,
+        displayName: displayName ?? currentUser.displayName,
+        accessToken: accessToken,
+        phone: phone,
+        birthday: birthday,
+        sex: sex,
+      );
+
+      _logger.log('yandex_id_profile_refresh_ok user=${userInfo.id}');
+      debugPrint('YandexIdAuthGatewayImpl: user profile refreshed');
+    } on YandexAuthInvalidTokenException {
+      _logger.log('yandex_id_profile_refresh_invalid_token');
+      debugPrint(
+        'YandexIdAuthGatewayImpl: invalid token during profile refresh',
+      );
+    } on Exception catch (e) {
+      _logger.log('yandex_id_profile_refresh_error: $e');
+      debugPrint('YandexIdAuthGatewayImpl: profile refresh error: $e');
     }
   }
 
@@ -199,11 +320,17 @@ final class YandexIdAuthGatewayImpl
 
       final email = await _secureStorage.read(key: _yandexUserEmailKey);
       final name = await _secureStorage.read(key: _yandexUserNameKey);
+      final avatarUrl = await _secureStorage.read(key: _yandexUserAvatarUrlKey);
+      final birthday = await _secureStorage.read(key: _yandexUserBirthdayKey);
+      final sex = await _secureStorage.read(key: _yandexUserSexKey);
 
       _currentUser = AppAuthUserEntity(
         uid: userId,
         email: (email ?? '').isNotEmpty ? email : null,
         displayName: (name ?? '').isNotEmpty ? name : null,
+        photoUrl: (avatarUrl ?? '').isNotEmpty ? avatarUrl : null,
+        birthDate: (birthday ?? '').isNotEmpty ? birthday : null,
+        gender: (sex ?? '').isNotEmpty ? sex : null,
         isAnonymous: false,
       );
       _subject.add(_currentUser);
@@ -223,6 +350,9 @@ final class YandexIdAuthGatewayImpl
     required String? email,
     required String? displayName,
     required String accessToken,
+    required String? phone,
+    required String? birthday,
+    required String? sex,
   }) async {
     try {
       await _secureStorage.write(
@@ -238,16 +368,32 @@ final class YandexIdAuthGatewayImpl
         key: _yandexUserNameKey,
         value: displayName ?? '',
       );
+      await _secureStorage.write(
+        key: _yandexUserPhoneKey,
+        value: phone ?? '',
+      );
+      await _secureStorage.write(
+        key: _yandexUserBirthdayKey,
+        value: birthday ?? '',
+      );
+      await _secureStorage.write(
+        key: _yandexUserSexKey,
+        value: sex ?? '',
+      );
 
       _currentUser = AppAuthUserEntity(
         uid: userId,
         email: (email ?? '').isNotEmpty ? email : null,
         displayName: (displayName ?? '').isNotEmpty ? displayName : null,
+        birthDate: (birthday ?? '').isNotEmpty ? birthday : null,
+        gender: (sex ?? '').isNotEmpty ? sex : null,
         isAnonymous: false,
       );
+      debugPrint('YandexIdAuthGatewayImpl: emitting auth state change for user $userId');
       _subject.add(_currentUser);
       _logger.log('yandex_id_auth_session_saved_ok user=$userId');
       debugPrint('YandexIdAuthGatewayImpl: session saved for user $userId');
+      debugPrint('YandexIdAuthGatewayImpl: hasListeners=${_subject.hasListener}');
     } on Exception catch (e) {
       _logger.log('yandex_id_auth_session_save_error: $e');
     }
@@ -260,6 +406,10 @@ final class YandexIdAuthGatewayImpl
       await _secureStorage.delete(key: _yandexUserIdKey);
       await _secureStorage.delete(key: _yandexUserEmailKey);
       await _secureStorage.delete(key: _yandexUserNameKey);
+      await _secureStorage.delete(key: _yandexUserAvatarUrlKey);
+      await _secureStorage.delete(key: _yandexUserPhoneKey);
+      await _secureStorage.delete(key: _yandexUserBirthdayKey);
+      await _secureStorage.delete(key: _yandexUserSexKey);
     } on Exception catch (e) {
       _logger.log('yandex_id_auth_clear_tokens_error: $e');
     }

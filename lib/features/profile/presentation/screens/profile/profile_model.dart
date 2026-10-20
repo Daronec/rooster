@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:elementary/elementary.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:rooster/features/auth/domain/auth_backend_strategy.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rooster/features/auth/domain/entities/app_auth_user_entity.dart';
 import 'package:rooster/features/auth/domain/gateways/i_auth_gateway.dart';
+import 'package:rooster/features/auth/domain/gateways/i_yandex_id_gateway.dart';
 import 'package:rooster/features/profile/domain/entities/profile_entity.dart';
 import 'package:rooster/features/profile/domain/entities/profile_team_card_entity.dart';
 import 'package:rooster/features/profile/domain/gateways/i_profile_avatar_gateway.dart';
@@ -19,15 +21,18 @@ final class ProfileScreenModel extends ElementaryModel {
     required IProfileAvatarGateway profileAvatarGateway,
     required IProfilePersonalDataGateway profilePersonalDataGateway,
     required ITeamsGateway teamsGateway,
+    IYandexIdGateway? yandexIdGateway,
   }) : _authGateway = authGateway,
        _profileAvatarGateway = profileAvatarGateway,
        _profilePersonalDataGateway = profilePersonalDataGateway,
-       _teamsGateway = teamsGateway;
+       _teamsGateway = teamsGateway,
+       _yandexIdGateway = yandexIdGateway;
 
   final IAuthGateway _authGateway;
   final IProfileAvatarGateway _profileAvatarGateway;
   final IProfilePersonalDataGateway _profilePersonalDataGateway;
   final ITeamsGateway _teamsGateway;
+  final IYandexIdGateway? _yandexIdGateway;
 
   StreamSubscription<ProfileEntity>? _personalNamesSubscription;
 
@@ -51,12 +56,16 @@ final class ProfileScreenModel extends ElementaryModel {
   /// URL для письма приглашения в команду (как в OAuth Appwrite).
   String get teamInvitationReturnUrl => _teamsGateway.teamInvitationReturnUrl;
 
-  /// Поток смены пользователя.
+  /// Объединённый поток смены пользователя от всех social auth gateway.
   Stream<AppAuthUserEntity?> get authStateChanges =>
-      _authGateway.authStateChanges;
+      MergeStream([
+        _authGateway.authStateChanges,
+        if (_yandexIdGateway != null) _yandexIdGateway.authStateChanges,
+      ]).where((user) => user != null).cast<AppAuthUserEntity?>();
 
-  /// Текущий пользователь.
-  AppAuthUserEntity? get user => _authGateway.currentUser;
+  /// Текущий пользователь (из любого gateway).
+  AppAuthUserEntity? get user =>
+      _authGateway.currentUser ?? _yandexIdGateway?.currentUser;
 
   /// Локальный путь к аватарке (HMS).
   Future<String?> loadPersistedLocalAvatarPath(String userId) =>
@@ -106,8 +115,23 @@ final class ProfileScreenModel extends ElementaryModel {
     lastName: lastName,
   );
 
-  /// Выход.
-  Future<void> signOut() => _authGateway.signOut();
+  /// Выход из всех авторизованных провайдеров (VK ID, Yandex ID).
+  Future<void> signOut() async {
+    await _authGateway.signOut();
+    final yandexGateway = _yandexIdGateway;
+    if (yandexGateway != null) {
+      await yandexGateway.signOut();
+    }
+  }
+
+  /// Обновить данные профиля из Yandex ID (аватар, телефон, день рождения и др.).
+  Future<void> refreshUserFromYandex() async {
+    final yandexGateway = _yandexIdGateway;
+    if (yandexGateway == null) {
+      return;
+    }
+    await yandexGateway.refreshUserProfile();
+  }
 
   /// Обновить список команд; при офлайне или без пользователя — пустой список.
   Future<void> refreshTeams(AppAuthUserEntity? user) async {

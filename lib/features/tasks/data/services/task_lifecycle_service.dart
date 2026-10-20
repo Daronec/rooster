@@ -50,7 +50,6 @@ final class TaskLifecycleService {
   final Uuid _uuid;
   final ISyncQueue _syncQueue;
 
-  @override
   Future<void> onTaskCreated(TaskEntity task) async {
     await _upsertReminder(task);
     await _writeChange(task, TaskChangeKindEntity.created);
@@ -59,7 +58,6 @@ final class TaskLifecycleService {
     await _scheduleSync();
   }
 
-  @override
   Future<void> onTaskUpdated(TaskEntity task, TaskEntity? previous) async {
     if (previous == null) {
       // Не найдена — считаем созданием
@@ -77,7 +75,6 @@ final class TaskLifecycleService {
     await _scheduleSync();
   }
 
-  @override
   Future<void> onTaskDeleted(TaskEntity task) async {
     await _cancelReminder(task.id);
     await _writeChangeDeleted(task);

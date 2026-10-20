@@ -22,7 +22,7 @@ class AuthMobileContent extends StatelessWidget {
     return AppScaffold(
       appBar: DefaultAppBar(
         title: Text(FlutterI18n.translate(context, 'auth.screenTitle')),
-        withBackButton: context.router.root.canPop(),
+        withBackButton: context.router.canPop(),
       ),
       body: Padding(
         padding: AppSizes.edgeInsetsAll16,

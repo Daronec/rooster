@@ -8,6 +8,24 @@ import 'package:rooster/features/profile/domain/entities/user_profile.dart';
 import 'package:rooster/features/profile/domain/gateways/i_profile_personal_data_gateway.dart';
 import 'package:union_state/union_state.dart';
 
+/// Интерфейс для сервиса профиля пользователя.
+///
+/// Позволяет использовать composition-based fakes в тестах
+/// (UserProfileService — final class).
+abstract interface class IUserProfileService {
+  /// Текущий объединённый UserProfile (null если пользователь не вошёл).
+  UserProfile? get currentProfile;
+
+  /// Текущий auth user (для синхронного доступа).
+  AppAuthUserEntity? get currentAuthUser;
+
+  /// Запустить слушание изменений auth и загрузить профиль.
+  void init();
+
+  /// Остановить слушание и освободить ресурсы.
+  void dispose();
+}
+
 /// Сервис, предоставляющий value-listenable view данных профиля пользователя.
 ///
 /// Слушает изменения auth gateway и, когда пользователь авторизован,
@@ -15,7 +33,7 @@ import 'package:union_state/union_state.dart';
 /// в единый `ValueNotifier<UnionState<UserProfile>>` с состояниями loading/content/error.
 ///
 /// Использование: `context.read<IAppScope>().userProfileService.userProfileState`
-final class UserProfileService {
+final class UserProfileService implements IUserProfileService {
   /// Создаёт сервис.
   UserProfileService({
     required IAuthGateway authGateway,

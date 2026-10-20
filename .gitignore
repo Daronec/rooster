@@ -35,3 +35,6 @@ vendor/
 .DS_Store
 Thumbs.db
 ```
+
+# FVM Version Cache
+.fvm/
